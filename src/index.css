@@ -1,0 +1,153 @@
+@import "@qpokychuk/gilroy/normal.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /*
+   * UI-кит: токены темы (корневой файл).
+   * --border используется для рамок карточек, сайдбара, поиска, инпутов.
+   * В dark задаётся под цвет рамки поисковика (slate-700) для единого вида.
+   */
+  /* Светлая тема (по умолчанию) — фон #F5F5F5 */
+  :root {
+    --font-sans: "Gilroy", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --card-r: 28px;
+    --background: 0 0% 96%;
+    --surface: 0 0% 94%; /* подложка под карточками/блоками */
+    --foreground: 222.2 47% 11.2%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 47% 11.2%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 47% 11.2%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 47% 11.2%;
+    --destructive: 0 62.8% 30.6%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 224.3 76.3% 48%;
+  }
+
+  /*
+   * Тёмная тема: общий фон #0A0A0A, подложка блоков #090B0B,
+   * бордюр #414648, обводка окна/поиска #212323.
+   * Скругление как в светлой: 28px (дублируем --card-r явно для надёжности).
+   */
+  .dark,
+  html.dark {
+    --card-r: 28px;
+    --background: 0 0% 4%; /* #0A0A0A — общий фон */
+    --surface: 180 9% 4%; /* #090B0B — подложка под карточками/блоками */
+    --foreground: 0 0% 98%;
+    --card: 200 16% 10%;
+    --card-foreground: 0 0% 98%;
+    --primary: 210 28% 42%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 200 16% 10%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 200 16% 10%;
+    --muted-foreground: 210 8% 63%;
+    --accent: 210 28% 42%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 210 5% 27%; /* #414648 */
+    --input: 210 11% 14%; /* #1F2527 */
+    --ring: 180 3% 13%; /* #212323 — обводка окна, поиск и т.д. */
+  }
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: var(--font-sans);
+}
+
+/* Тёмная тема: фон #0A0A0A и скругление 28px — строго как в светлой */
+html.dark,
+html.dark body,
+html.dark #root {
+  background-color: #0A0A0A !important;
+}
+html.dark .bg-background {
+  background-color: #0A0A0A !important;
+}
+/* Единое скругление 28px для всех карточных углов в тёмной теме */
+html.dark .rounded-card {
+  border-radius: 28px !important;
+}
+html.dark .rounded-t-card {
+  border-top-left-radius: 28px !important;
+  border-top-right-radius: 28px !important;
+}
+html.dark .rounded-b-card {
+  border-bottom-left-radius: 28px !important;
+  border-bottom-right-radius: 28px !important;
+}
+html.dark .rounded-l-card {
+  border-top-left-radius: 28px !important;
+  border-bottom-left-radius: 28px !important;
+}
+html.dark .rounded-r-card {
+  border-top-right-radius: 28px !important;
+  border-bottom-right-radius: 28px !important;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/*
+ * Глобально отключаем перетаскивание картинок мышью (нет «призрака» и дропа).
+ * Правило для всего сайта: картинки не тянутся.
+ */
+img {
+  -webkit-user-drag: none;
+  user-drag: none;
+}
+
+/* Бегущая строка: GPU (transform), бесшовный цикл через -50% */
+@keyframes ticker {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-ticker {
+  animation: ticker var(--ticker-duration, 40s) linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-ticker {
+    animation-play-state: paused;
+  }
+}
+
+/*
+ * Карточка проекта: фон задаётся явно в селекторах темы (как у --card),
+ * чтобы уголки и контент переключались в одном стиле, без асинхронности.
+ */
+.project-card {
+  isolation: isolate;
+}
+:root .project-card {
+  background-color: hsl(0 0% 100%);
+}
+.dark .project-card,
+html.dark .project-card {
+  background-color: hsl(200 16% 10%);
+}
+.project-card__image-zone,
+.project-card__content {
+  background: transparent;
+}
