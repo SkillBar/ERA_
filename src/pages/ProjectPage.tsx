@@ -27,24 +27,52 @@ const INVESTMENT_TYPE_LABELS: Record<string, string> = {
 
 type SectionItem = { id: string; label: string; children?: { id: string; label: string }[] }
 
-/** Секции для сайдбара (дерево на 1 уровень вниз) и scroll spy. */
+/** Секции для сайдбара (дерево на 1 уровень вниз) и scroll spy. Структура страницы проекта. */
 function getSectionConfig(detail: NonNullable<ReturnType<typeof getProjectPageDetail>>): SectionItem[] {
-  const aboutItem: SectionItem = {
-    id: "section-about",
-    label: "О проекте",
-    children: detail.gameModes?.length ? [{ id: "section-game-modes", label: "Режим игр" }] : undefined,
-  }
-  const items: SectionItem[] = [
-    aboutItem,
-    { id: "section-audience", label: "Целевая аудитория" },
+  const aboutChildren = detail.gameModes?.length ? [{ id: "section-game-modes", label: "Режимы игр" }] : undefined
+  return [
+    { id: "section-summary", label: "Резюме проекта" },
+    {
+      id: "section-about",
+      label: "О проекте",
+      children: aboutChildren,
+    },
+    {
+      id: "section-marketing",
+      label: "Маркетинговый анализ",
+      children: [
+        { id: "section-market-analysis", label: "Анализ рынка" },
+        { id: "section-audience", label: "Целевая аудитория" },
+        { id: "section-competitors", label: "Конкурентная среда" },
+        { id: "section-trends", label: "Тенденции рынка" },
+        { id: "section-growth", label: "Потенциалы роста" },
+      ],
+    },
+    {
+      id: "section-org",
+      label: "Организационная структура и управление",
+      children: [
+        { id: "section-org-form", label: "Форма организации" },
+        { id: "section-team", label: "Команда" },
+        { id: "section-roles", label: "Роли и обязанности" },
+        { id: "section-org-structure", label: "Организационная структура" },
+      ],
+    },
+    {
+      id: "section-products",
+      label: "Продукты или услуги",
+      children: [{ id: "section-products-description", label: "Описание" }],
+    },
+    { id: "section-strategy", label: "Маркетинговая стратегия" },
+    {
+      id: "section-financials",
+      label: "Финансовые прогнозы",
+      children: [
+        { id: "section-sales-forecast", label: "Прогнозы продаж" },
+        { id: "section-income-expenses", label: "Доходы и расходы" },
+      ],
+    },
   ]
-  if (detail.investmentTerms) items.push({ id: "section-terms", label: "Условия инвестиций" })
-  if (detail.breakdown?.length) items.push({ id: "section-breakdown", label: "Использование средств" })
-  if (detail.roadmap?.length) items.push({ id: "section-roadmap", label: "Дорожная карта" })
-  items.push({ id: "section-risks", label: "Риски и вызовы" })
-  if (detail.teamMembers?.length) items.push({ id: "section-team", label: "Команда" })
-  if (detail.perks?.length) items.push({ id: "section-perks", label: "Варианты поддержки" })
-  return items
 }
 
 /** Все id секций для scroll spy (включая дочерние). */
@@ -223,8 +251,8 @@ export function ProjectPage() {
         </div>
       </section>
 
-      {/* Метрики: тип инвестиций (вкладка), сумма (для обычных инвестиций — только цель, без «из» и без прогресс-бара), стадия. */}
-      <section className="border-b border-border bg-surface py-6">
+      {/* 1. Резюме проекта — ключевые метрики и бизнес-специфика, как карточка стартапа */}
+      <section id="section-summary" className="border-b border-border bg-surface py-6">
         <div className="container mx-auto px-4">
           {detail?.investmentType && (
             <div className="mb-4">
@@ -324,7 +352,7 @@ export function ProjectPage() {
                         }}
                         className={cn(
                           "flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
-                          activeSection === item.id
+                          activeSection === item.id || item.children?.some((c) => c.id === activeSection)
                             ? "bg-accent text-accent-foreground"
                             : "text-muted-foreground"
                         )}
@@ -362,188 +390,235 @@ export function ProjectPage() {
 
           const mainContent = (
             <div className="container mx-auto space-y-10">
-          <div className="space-y-10">
-            <SectionCard id="section-about" title="О проекте" contentClassName="space-y-4">
-              {detail.fullDescriptionImageUrl && (
-                <div className="overflow-hidden rounded-card border border-border">
-                  <img
-                    src={detail.fullDescriptionImageUrl}
-                    alt="Как выглядит проект"
-                    className="w-full object-cover"
-                    onError={(e) => {
-                      e.currentTarget.style.display = "none"
-                    }}
-                  />
-                </div>
-              )}
-              <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground">
-                {detail.fullDescription.split("\n").map((p, i) => (
-                  <p key={i}>{p}</p>
-                ))}
-              </div>
-            </SectionCard>
-
-            {detail.gameModes && detail.gameModes.length > 0 && (
-              <section id="section-game-modes" className="space-y-4">
-                <h2 className="text-xl font-semibold">Режим игр</h2>
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                  {detail.gameModes.map((mode, idx) => (
-                    <ImageTextCard
-                      key={idx}
-                      imageUrl={mode.imageUrl}
-                      imageAlt={mode.title}
-                      title={mode.title}
-                      description={mode.description}
-                      imageUrls={mode.imageUrls}
-                      details={mode.details}
-                      badge={mode.badge}
-                      stacked
+              {/* 2. О проекте */}
+              <SectionCard id="section-about" title="О проекте" contentClassName="space-y-4">
+                {detail.fullDescriptionImageUrl && (
+                  <div className="overflow-hidden rounded-card border border-border">
+                    <img
+                      src={detail.fullDescriptionImageUrl}
+                      alt="Как выглядит проект"
+                      className="w-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.style.display = "none"
+                      }}
                     />
+                  </div>
+                )}
+                <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground">
+                  {detail.fullDescription.split("\n").map((p, i) => (
+                    <p key={i}>{p}</p>
                   ))}
                 </div>
-              </section>
-            )}
-
-            <SectionCard id="section-audience" title="Целевая аудитория / Кому это нужно" contentClassName="text-muted-foreground">
-              {detail.targetAudience}
-            </SectionCard>
-
-            {detail.investmentTerms && (
-              <SectionCard id="section-terms" title="Условия инвестиций" contentClassName="whitespace-pre-line text-muted-foreground">
-                {detail.investmentTerms}
               </SectionCard>
-            )}
 
-            {(detail.breakdown?.length || detail.costBreakdownTable?.length) ? (
-              <SectionCard
-                id="section-breakdown"
-                title="Использование средств"
-                description="Breakdown распределения"
-                contentClassName="space-y-6"
-              >
-                {detail.breakdown && detail.breakdown.length > 0 && (
-                  <div className="space-y-3">
-                    {detail.breakdown.map((item) => (
-                      <div key={item.label} className="flex items-center gap-4">
-                        <span className="w-32 text-sm text-muted-foreground">
-                          {item.label}
-                        </span>
-                        <Progress value={item.percent} className="flex-1" />
-                        <span className="text-sm font-medium">{item.percent}%</span>
-                      </div>
+              {detail.gameModes && detail.gameModes.length > 0 && (
+                <section id="section-game-modes" className="space-y-4">
+                  <h2 className="text-xl font-semibold">Режимы игр</h2>
+                  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                    {detail.gameModes.map((mode, idx) => (
+                      <ImageTextCard
+                        key={idx}
+                        imageUrl={mode.imageUrl}
+                        imageAlt={mode.title}
+                        title={mode.title}
+                        description={mode.description}
+                        imageUrls={mode.imageUrls}
+                        details={mode.details}
+                        badge={mode.badge}
+                        stacked
+                      />
                     ))}
                   </div>
-                )}
-                {detail.costBreakdownTable && detail.costBreakdownTable.length > 0 && (
-                  <CostBreakdownTable rows={detail.costBreakdownTable} className={detail.breakdown?.length ? "mt-6" : undefined} />
-                )}
-              </SectionCard>
-            ) : null}
+                </section>
+              )}
 
-            {detail.roadmap && detail.roadmap.length > 0 && (
-              <SectionCard
-                id="section-roadmap"
-                title="Дорожная карта"
-                description="Основные этапы"
-              >
-                <ul className="space-y-4">
-                  {detail.roadmap.map((m) => (
-                    <li
-                      key={m.quarter + m.title}
-                      className={cn(
-                        "flex gap-4 border-l-2 pl-4",
-                        m.status === "done" && "border-green-500",
-                        m.status === "current" && "border-blue-500",
-                        m.status === "planned" && "border-border"
-                      )}
-                    >
-                      <span className="text-sm font-medium text-muted-foreground">
-                        {m.quarter}
-                      </span>
-                      <div>
-                        <p className="font-medium text-foreground">
-                          {m.title}
-                          {m.status === "current" && (
-                            <span className="ml-2 text-xs text-primary">
-                              (текущий этап)
-                            </span>
-                          )}
-                        </p>
-                        {m.description && (
-                          <p className="text-sm text-muted-foreground">
-                            {m.description}
-                          </p>
-                        )}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </SectionCard>
-            )}
-
-            <SectionCard id="section-risks" title="Риски и вызовы" contentClassName="text-sm text-muted-foreground">
-              {detail.risks}
-            </SectionCard>
-          </div>
-
-          {detail.teamMembers && detail.teamMembers.length > 0 && (
-            <SectionCard
-              id="section-team"
-              title="Команда"
-              description="Детали команды"
-              contentClassName="space-y-6"
-            >
-              {detail.teamMembers.map((member) => (
-                <div key={member.id} className="flex gap-4">
-                  {member.avatarUrl ? (
-                    <img
-                      src={member.avatarUrl}
-                      alt=""
-                      className="h-14 w-14 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-muted text-lg font-medium text-muted-foreground">
-                      {member.name.charAt(0)}
-                    </div>
-                  )}
-                  <div>
-                    <p className="font-semibold text-foreground">
-                      {member.name}
+              {/* 3. Маркетинговый анализ */}
+              <SectionCard id="section-marketing" title="Маркетинговый анализ">
+                <div className="space-y-10">
+                  <section id="section-market-analysis" className="space-y-2">
+                    <h3 className="text-lg font-semibold">Анализ рынка</h3>
+                    <p className="text-muted-foreground whitespace-pre-line">
+                      {detail.marketAnalysis ?? "—"}
                     </p>
-                    {member.role ? (
-                      <p className="text-sm text-primary">{member.role}</p>
-                    ) : null}
-                    {member.bio ? (
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        {member.bio}
-                      </p>
-                    ) : null}
-                  </div>
+                  </section>
+                  <section id="section-audience" className="space-y-2">
+                    <h3 className="text-lg font-semibold">Целевая аудитория</h3>
+                    <p className="text-muted-foreground">{detail.targetAudience}</p>
+                  </section>
+                  <section id="section-competitors" className="space-y-2">
+                    <h3 className="text-lg font-semibold">Конкурентная среда</h3>
+                    <p className="text-muted-foreground whitespace-pre-line">
+                      {detail.competitiveEnvironment ?? "—"}
+                    </p>
+                  </section>
+                  <section id="section-trends" className="space-y-2">
+                    <h3 className="text-lg font-semibold">Тенденции рынка</h3>
+                    <p className="text-muted-foreground whitespace-pre-line">
+                      {detail.marketTrends ?? "—"}
+                    </p>
+                  </section>
+                  <section id="section-growth" className="space-y-2">
+                    <h3 className="text-lg font-semibold">Потенциалы роста</h3>
+                    <p className="text-muted-foreground whitespace-pre-line">
+                      {detail.growthPotential ?? "—"}
+                    </p>
+                  </section>
                 </div>
-              ))}
-            </SectionCard>
-          )}
+              </SectionCard>
 
-          {detail.perks && detail.perks.length > 0 && (
-            <SectionCard
-              id="section-perks"
-              title="Варианты поддержки"
-              description="Уровни и перки"
-              contentClassName="space-y-4"
-            >
-              {detail.perks.map((tier) => (
-                <TierCard
-                  key={tier.title}
-                  title={tier.title}
-                  amount={tier.amount}
-                  description={tier.description}
-                  features={tier.features}
-                  popular={tier.popular}
-                />
-              ))}
-            </SectionCard>
-          )}
-        </div>
+              {/* 4. Организационная структура и управление */}
+              <SectionCard id="section-org" title="Организационная структура и управление">
+                <div className="space-y-10">
+                  <section id="section-org-form" className="space-y-2">
+                    <h3 className="text-lg font-semibold">Форма организации</h3>
+                    <p className="text-muted-foreground whitespace-pre-line">
+                      {detail.formOfOrganization ?? "—"}
+                    </p>
+                  </section>
+                  {detail.teamMembers && detail.teamMembers.length > 0 && (
+                    <section id="section-team" className="space-y-4">
+                      <h3 className="text-lg font-semibold">Команда</h3>
+                      <div className="space-y-4">
+                        {detail.teamMembers.map((member) => (
+                          <div key={member.id} className="flex gap-4">
+                            {member.avatarUrl ? (
+                              <img
+                                src={member.avatarUrl}
+                                alt=""
+                                className="h-14 w-14 rounded-full object-cover"
+                              />
+                            ) : (
+                              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-muted text-lg font-medium text-muted-foreground">
+                                {member.name.charAt(0)}
+                              </div>
+                            )}
+                            <div>
+                              <p className="font-semibold text-foreground">{member.name}</p>
+                              {member.role && <p className="text-sm text-primary">{member.role}</p>}
+                              {member.bio && <p className="mt-1 text-sm text-muted-foreground">{member.bio}</p>}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+                  )}
+                  <section id="section-roles" className="space-y-2">
+                    <h3 className="text-lg font-semibold">Роли и обязанности</h3>
+                    <p className="text-muted-foreground whitespace-pre-line">
+                      {detail.rolesAndResponsibilities ?? "—"}
+                    </p>
+                  </section>
+                  <section id="section-org-structure" className="space-y-2">
+                    <h3 className="text-lg font-semibold">Организационная структура</h3>
+                    <p className="text-muted-foreground whitespace-pre-line">
+                      {detail.organizationalStructure ?? "—"}
+                    </p>
+                  </section>
+                </div>
+              </SectionCard>
+
+              {/* 5. Продукты или услуги */}
+              <SectionCard id="section-products" title="Продукты или услуги">
+                <section id="section-products-description" className="space-y-2">
+                  <h3 className="text-lg font-semibold">Описание</h3>
+                  <p className="text-muted-foreground whitespace-pre-line">
+                    {detail.productsOrServicesDescription ?? "—"}
+                  </p>
+                </section>
+              </SectionCard>
+
+              {/* 6. Маркетинговая стратегия */}
+              <SectionCard id="section-strategy" title="Маркетинговая стратегия" contentClassName="text-muted-foreground whitespace-pre-line">
+                {detail.marketingStrategy ?? "—"}
+              </SectionCard>
+
+              {/* 7. Финансовые прогнозы */}
+              <SectionCard id="section-financials" title="Финансовые прогнозы">
+                <div className="space-y-10">
+                  <section id="section-sales-forecast" className="space-y-2">
+                    <h3 className="text-lg font-semibold">Прогнозы продаж</h3>
+                    <p className="text-muted-foreground whitespace-pre-line">
+                      {detail.salesForecast ?? "—"}
+                    </p>
+                  </section>
+                  <section id="section-income-expenses" className="space-y-4">
+                    <h3 className="text-lg font-semibold">Доходы и расходы</h3>
+                    {detail.incomeAndExpenses && (
+                      <p className="text-muted-foreground whitespace-pre-line">{detail.incomeAndExpenses}</p>
+                    )}
+                    {detail.breakdown && detail.breakdown.length > 0 && (
+                      <div className="space-y-3">
+                        {detail.breakdown.map((item) => (
+                          <div key={item.label} className="flex items-center gap-4">
+                            <span className="w-40 shrink-0 text-sm text-muted-foreground">{item.label}</span>
+                            <Progress value={item.percent} className="flex-1" />
+                            <span className="text-sm font-medium">{item.percent}%</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {detail.costBreakdownTable && detail.costBreakdownTable.length > 0 && (
+                      <CostBreakdownTable rows={detail.costBreakdownTable} className="mt-6" />
+                    )}
+                    {!detail.incomeAndExpenses && !detail.breakdown?.length && !detail.costBreakdownTable?.length && (
+                      <p className="text-muted-foreground">—</p>
+                    )}
+                  </section>
+                </div>
+              </SectionCard>
+
+              {detail.investmentTerms && (
+                <SectionCard id="section-terms" title="Условия инвестиций" contentClassName="whitespace-pre-line text-muted-foreground">
+                  {detail.investmentTerms}
+                </SectionCard>
+              )}
+
+              {detail.roadmap && detail.roadmap.length > 0 && (
+                <SectionCard id="section-roadmap" title="Дорожная карта" description="Основные этапы">
+                  <ul className="space-y-4">
+                    {detail.roadmap.map((m) => (
+                      <li
+                        key={m.quarter + m.title}
+                        className={cn(
+                          "flex gap-4 border-l-2 pl-4",
+                          m.status === "done" && "border-green-500",
+                          m.status === "current" && "border-blue-500",
+                          m.status === "planned" && "border-border"
+                        )}
+                      >
+                        <span className="text-sm font-medium text-muted-foreground">{m.quarter}</span>
+                        <div>
+                          <p className="font-medium text-foreground">
+                            {m.title}
+                            {m.status === "current" && <span className="ml-2 text-xs text-primary">(текущий этап)</span>}
+                          </p>
+                          {m.description && <p className="text-sm text-muted-foreground">{m.description}</p>}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </SectionCard>
+              )}
+
+              <SectionCard id="section-risks" title="Риски и вызовы" contentClassName="text-sm text-muted-foreground">
+                {detail.risks}
+              </SectionCard>
+
+              {detail.perks && detail.perks.length > 0 && (
+                <SectionCard id="section-perks" title="Варианты поддержки" description="Уровни и перки" contentClassName="space-y-4">
+                  {detail.perks.map((tier) => (
+                    <TierCard
+                      key={tier.title}
+                      title={tier.title}
+                      amount={tier.amount}
+                      description={tier.description}
+                      features={tier.features}
+                      popular={tier.popular}
+                    />
+                  ))}
+                </SectionCard>
+              )}
+            </div>
           )
 
           return (

@@ -1,10 +1,11 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { Tabs, TabsContent } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
 
 const AUTO_ADVANCE_MS = 6000
+const SWIPE_THRESHOLD_PX = 50
 
 export interface ImageSliderProps {
   /** Список URL изображений (два и более для переключения) */
@@ -17,7 +18,7 @@ export interface ImageSliderProps {
 }
 
 /**
- * Слайдер изображений на базе Tabs: переключение точками, автопрокрутка каждые 6 с (плавный переход).
+ * Слайдер изображений на базе Tabs: переключение точками, свайп на тач-устройствах, автопрокрутка каждые 6 с.
  */
 export function ImageSlider({
   images,
@@ -26,6 +27,46 @@ export function ImageSlider({
   imageClassName,
 }: ImageSliderProps) {
   const [value, setValue] = useState(String(0))
+  const [touchStartX, setTouchStartX] = useState<number | null>(null)
+  const [touchStartY, setTouchStartY] = useState<number | null>(null)
+
+  const goTo = useCallback(
+    (index: number) => {
+      const next = Math.max(0, Math.min(index, images.length - 1))
+      setValue(String(next))
+    },
+    [images.length]
+  )
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    setTouchStartX(e.touches[0].clientX)
+    setTouchStartY(e.touches[0].clientY)
+  }, [])
+
+  const handleTouchMove = useCallback(
+    (e: React.TouchEvent) => {
+      if (touchStartX === null || touchStartY === null || images.length < 2) return
+      const dx = Math.abs(e.touches[0].clientX - touchStartX)
+      const dy = Math.abs(e.touches[0].clientY - touchStartY)
+      if (dx > dy && dx > SWIPE_THRESHOLD_PX) e.preventDefault()
+    },
+    [touchStartX, touchStartY, images.length]
+  )
+
+  const handleTouchEnd = useCallback(
+    (e: React.TouchEvent) => {
+      if (touchStartX === null || images.length < 2) return
+      const endX = e.changedTouches[0].clientX
+      const delta = endX - touchStartX
+      setTouchStartX(null)
+      setTouchStartY(null)
+      if (Math.abs(delta) < SWIPE_THRESHOLD_PX) return
+      const current = Number(value)
+      if (delta > 0) goTo(current - 1)
+      else goTo(current + 1)
+    },
+    [touchStartX, value, images.length, goTo]
+  )
 
   useEffect(() => {
     if (images.length < 2) return
@@ -53,7 +94,13 @@ export function ImageSlider({
 
   return (
     <Tabs value={value} onValueChange={setValue} className={cn("relative size-full", className)}>
-      <div className="relative size-full overflow-hidden">
+      <div
+        className="relative size-full overflow-hidden"
+        style={{ touchAction: "pan-y" }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         {images.map((src, i) => (
           <TabsContent
             key={i}

@@ -215,7 +215,7 @@ export function Home() {
               <div className="w-full">
                 <SearchAutocomplete
                   large
-                  placeholder="Поиск проектов, создателей и категорий..."
+                  placeholder="Поиск проектов"
                   className="w-full"
                   variant="soft"
                 />

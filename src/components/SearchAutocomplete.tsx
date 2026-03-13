@@ -35,7 +35,7 @@ function getMatchingProjects(
 
 export function SearchAutocomplete({
   className,
-  placeholder = "Поиск проектов, создателей и категорий",
+  placeholder = "Поиск проектов",
   large = false,
   size: sizeProp,
   variant = "default",
@@ -45,6 +45,8 @@ export function SearchAutocomplete({
   const navigate = useNavigate()
   const [query, setQuery] = useState("")
   const [isOpen, setIsOpen] = useState(false)
+  const [isFocused, setIsFocused] = useState(false)
+  const [isExiting, setIsExiting] = useState(false)
   const [highlightIndex, setHighlightIndex] = useState(0)
   const wrapperRef = useRef<HTMLDivElement>(null)
   const internalInputRef = useRef<HTMLInputElement>(null)
@@ -55,11 +57,13 @@ export function SearchAutocomplete({
   const projects = useMemo(() => getProjectsWithCreators(), [])
   const hits = getMatchingProjects(query, projects)
   const showPanel = isOpen && (query.length > 0 || hits.length > 0)
+  const panelVisible = showPanel || isExiting
 
   const close = useCallback(() => {
+    if (showPanel) setIsExiting(true)
     setIsOpen(false)
     setHighlightIndex(0)
-  }, [])
+  }, [showPanel])
 
   const scheduleCollapse = useCallback(() => {
     if (!onCollapseRequest) return
@@ -134,123 +138,172 @@ export function SearchAutocomplete({
   const iconSizeClasses = { header: "h-4 w-4", default: "h-4 w-4", large: "h-5 w-5" }
   const inputSizeClasses = { header: "text-sm", default: "text-sm", large: "text-lg" }
 
+  const handleWrapperClick = useCallback(() => {
+    inputRef.current?.focus()
+  }, [])
+
   return (
-    <div ref={wrapperRef} className={cn("relative w-full min-w-0", isSoft ? undefined : "max-w-xl", className)}>
+    <div
+      ref={wrapperRef}
+      role="search"
+      className={cn("relative w-full min-w-0 cursor-text", isSoft ? undefined : "max-w-xl", className)}
+      onClick={handleWrapperClick}
+    >
+      {/* Единая градиентная обводка вокруг поиска и выпадающего списка (без полоски между ними) */}
       <div
         style={{
-          borderTopLeftRadius: radiusPx,
-          borderTopRightRadius: radiusPx,
-          ...(showPanel
-            ? { borderBottomLeftRadius: 0, borderBottomRightRadius: 0 }
-            : { borderBottomLeftRadius: radiusPx, borderBottomRightRadius: radiusPx }),
+          borderRadius: radiusPx + 1,
+          background: "linear-gradient(90deg, #3b82f6 0%, #06b6d4 50%, #14b8a6 100%)",
+          padding: 1,
+          boxShadow: panelVisible
+            ? "0 0 16px rgba(59, 130, 246, 0.35), 0 0 28px rgba(6, 182, 212, 0.2)"
+            : "none",
         }}
-        className={cn(
-          "flex items-center text-foreground transition-colors",
-          isSoft
-            ? "bg-white border border-border/80 dark:bg-card dark:text-foreground focus-within:border-primary/40 dark:focus-within:border-primary/50"
-            : "bg-muted/80 dark:bg-card border-border focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/20 dark:focus-within:border-primary/50 dark:focus-within:ring-primary/20",
-          showPanel && !isSoft && "border-0 border-b-0 ring-2 ring-primary/20 ring-offset-0 dark:ring-indigo-500/20",
-          showPanel && isSoft && "border-primary/40 dark:border-primary/50",
-          sizeClasses[size]
-        )}
+        className="transition-shadow duration-200"
       >
-        <Search
-          className={cn("shrink-0 text-muted-foreground", iconSizeClasses[size])}
-        />
-        <input
-          ref={inputRef}
-          type="search"
-          role="combobox"
-          aria-expanded={showPanel}
-          aria-autocomplete="list"
-          aria-controls="search-results"
-          aria-activedescendant={
-            showPanel && hits[highlightIndex]
-              ? `search-result-${highlightIndex}`
-              : undefined
-          }
-          id="search-input"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onFocus={() => {
-            setIsOpen(true)
-            if (collapseTimeoutRef.current) {
-              clearTimeout(collapseTimeoutRef.current)
-              collapseTimeoutRef.current = null
-            }
-          }}
-          onBlur={handleInputBlur}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholder}
+        <div
+          style={{ borderRadius: radiusPx }}
           className={cn(
-            "min-w-0 flex-1 bg-transparent outline-none placeholder:text-muted-foreground",
-            inputSizeClasses[size]
+            "overflow-hidden bg-white dark:bg-card transition-[flex] duration-200 ease-out",
+            panelVisible ? "flex flex-col gap-0" : "flex items-center text-foreground"
           )}
-        />
-      </div>
-
-      {/* Список: absolute, ровно под поисковиком (top: 100%), не двигает контент; анимация — спуск вниз */}
-      <AnimatePresence>
-        {showPanel && (
-          <motion.ul
-            id="search-results"
-            role="listbox"
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+        >
+          {/* Строка поиска: лупа всегда на одном месте (слева); без фокуса — текст по центру, с фокусом — влево */}
+          <div
             className={cn(
-              "absolute left-0 right-0 top-full z-50 mt-0 max-h-[min(400px,70vh)] overflow-auto rounded-t-none border border-t-0 border-border bg-card py-1 shadow-xl dark:backdrop-blur-md",
-              showPanel && "ring-2 ring-primary/20 ring-offset-0 border-primary/50 dark:border-primary/50",
-              size === "large" ? "rounded-b-[28px]" : size === "header" ? "rounded-b-[18px]" : "rounded-b-[22px]"
+              "flex w-full shrink-0 items-center text-foreground transition-colors",
+              sizeClasses[size]
             )}
           >
-          {hits.length === 0 ? (
-            <li className="px-4 py-3 text-sm text-muted-foreground">
-              Ничего не найдено
-            </li>
-          ) : (
-            hits.map((item, index) => {
-              const percent = Math.round((item.raised / item.goal) * 100)
-              return (
-                <li
-                  key={item.id}
-                  id={`search-result-${index}`}
-                  role="option"
-                  aria-selected={index === highlightIndex}
+            <Search
+              className={cn("shrink-0 text-muted-foreground", iconSizeClasses[size])}
+            />
+            <div className="relative min-w-0 flex-1 overflow-hidden">
+              {!query && (
+                <div
                   className={cn(
-                    "flex cursor-pointer items-center gap-3 px-3 py-2 transition-colors",
-                    index === highlightIndex
-                      ? "bg-accent text-accent-foreground"
-                      : "text-foreground hover:bg-muted"
+                    "pointer-events-none absolute inset-0 flex items-center transition-[justify-content] duration-200",
+                    isFocused ? "justify-start pl-1" : "justify-center"
                   )}
-                  onMouseEnter={() => setHighlightIndex(index)}
-                  onMouseDown={(e) => {
-                    e.preventDefault()
-                    selectProject(item)
-                  }}
+                  aria-hidden
                 >
-                  <img
-                    src={item.imageUrl}
-                    alt=""
-                    className="h-12 w-12 shrink-0 rounded object-cover"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate font-medium text-foreground">
-                      {item.title}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {item.creators.map((c) => c.name).join(", ")} · {percent}%
-                      funded · {item.daysLeft} дн.
-                    </div>
-                  </div>
-                </li>
-              )
-            })
-          )}
-          </motion.ul>
-        )}
-      </AnimatePresence>
+                  <span
+                    className={cn(
+                      "block truncate text-muted-foreground whitespace-nowrap",
+                      inputSizeClasses[size]
+                    )}
+                  >
+                    {placeholder}
+                  </span>
+                </div>
+              )}
+              <input
+                ref={inputRef}
+                type="search"
+                role="combobox"
+                aria-expanded={showPanel}
+                aria-autocomplete="list"
+                aria-controls="search-results"
+                aria-activedescendant={
+                  showPanel && hits[highlightIndex]
+                    ? `search-result-${highlightIndex}`
+                    : undefined
+                }
+                id="search-input"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onFocus={() => {
+                  setIsFocused(true)
+                  setIsOpen(true)
+                  if (collapseTimeoutRef.current) {
+                    clearTimeout(collapseTimeoutRef.current)
+                    collapseTimeoutRef.current = null
+                  }
+                }}
+                onBlur={() => {
+                  setIsFocused(false)
+                  handleInputBlur()
+                }}
+                onKeyDown={handleKeyDown}
+                placeholder=""
+                className={cn(
+                  "relative z-10 w-full bg-transparent outline-none transition-[text-align] duration-200",
+                  isFocused ? "text-left" : "text-center",
+                  inputSizeClasses[size]
+                )}
+              />
+            </div>
+          </div>
+
+          {/* Плавное сворачивание: layout не меняется до конца exit (isExiting), список только плавно исчезает */}
+          <AnimatePresence onExitComplete={() => setIsExiting(false)}>
+            {showPanel && (
+              <motion.ul
+                id="search-results"
+                role="listbox"
+                initial={{ opacity: 0, y: -4 }}
+                animate={{
+                  opacity: 1,
+                  y: 0,
+                  transition: { duration: 0.2, ease: [0.25, 0.1, 0.25, 1] },
+                }}
+                exit={{
+                  opacity: 0,
+                  transition: { duration: 0.18, ease: [0.4, 0, 1, 1] },
+                }}
+                className={cn(
+                  "overflow-auto bg-white py-1 dark:bg-card",
+                  "max-h-[min(400px,70vh)]"
+                )}
+              >
+                {hits.length === 0 ? (
+                  <li className="px-4 py-3 text-sm text-muted-foreground">
+                    Ничего не найдено
+                  </li>
+                ) : (
+                  hits.map((item, index) => {
+                    const percent = Math.round((item.raised / item.goal) * 100)
+                    return (
+                      <li
+                        key={item.id}
+                        id={`search-result-${index}`}
+                        role="option"
+                        aria-selected={index === highlightIndex}
+                        className={cn(
+                          "flex cursor-pointer items-center gap-3 px-3 py-2 transition-colors",
+                          index === highlightIndex
+                            ? "bg-accent text-accent-foreground"
+                            : "text-foreground hover:bg-muted"
+                        )}
+                        onMouseEnter={() => setHighlightIndex(index)}
+                        onMouseDown={(e) => {
+                          e.preventDefault()
+                          selectProject(item)
+                        }}
+                      >
+                        <img
+                          src={item.imageUrl}
+                          alt=""
+                          className="h-12 w-12 shrink-0 rounded object-cover"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate font-medium text-foreground">
+                            {item.title}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {item.creators.map((c) => c.name).join(", ")} · {percent}%
+                            funded · {item.daysLeft} дн.
+                          </div>
+                        </div>
+                      </li>
+                    )
+                  })
+                )}
+              </motion.ul>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
     </div>
   )
 }

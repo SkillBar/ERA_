@@ -133,6 +133,28 @@ img {
   }
 }
 
+/* Пульс индикатора «Лайв»: свечение и лёгкое масштабирование */
+@keyframes status-pulse {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5);
+  }
+  50% {
+    opacity: 0.9;
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+  }
+}
+
+.animate-status-pulse {
+  animation: status-pulse 1.5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-status-pulse {
+    animation: none;
+  }
+}
+
 /*
  * Карточка проекта: фон задаётся явно в селекторах темы (как у --card),
  * чтобы уголки и контент переключались в одном стиле, без асинхронности.

@@ -3,6 +3,7 @@ import { Menu, Search, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { RaisedButton } from "@/components/ui/raised-button"
 import { SearchAutocomplete } from "@/components/SearchAutocomplete"
+import { StatusIndicator } from "@/components/ui/status-indicator"
 import { ThemeSwitcherToggle } from "@/components/theme-switcher-toggle"
 import { Ticker } from "@/components/Ticker"
 import { useThemeSwitch } from "@/hooks/useThemeSwitch"
@@ -38,9 +39,9 @@ export function Header() {
           <span className="hidden text-xs text-muted-foreground sm:inline">Evolution of Reality</span>
         </a>
 
-        {/* Поиск по центру шапки (только desktop) */}
-        <div className="absolute left-1/2 top-0 hidden h-full w-full max-w-xl -translate-x-1/2 items-center justify-center px-4 md:flex">
-          <SearchAutocomplete placeholder="Поиск проектов, создателей и категорий" className="w-full" variant="soft" />
+        {/* Поиск по центру шапки (только desktop); pt выравнивает поле по оси Y с логотипом и кнопками (h-20 − h-11) / 2 */}
+        <div className="absolute left-1/2 top-0 z-30 hidden h-full w-full max-w-xl -translate-x-1/2 items-start justify-center px-4 pt-[18px] md:flex">
+          <SearchAutocomplete placeholder="Поиск проектов" className="w-full" variant="soft" />
         </div>
 
         {/* Mobile/планшет: поиск в шапке (раскрывается по клику), высота как у свитчера (h-9) */}
@@ -59,7 +60,7 @@ export function Header() {
           ) : (
             <div className="min-w-0 flex-1">
               <SearchAutocomplete
-                placeholder="Поиск..."
+                placeholder="Поиск проектов"
                 variant="soft"
                 size="header"
                 inputRef={searchInputRef}
@@ -89,20 +90,30 @@ export function Header() {
         </div>
       </div>
 
-      {/* Бегущая строка под шапкой (z-0, чтобы выпадающий список поиска был поверх) */}
+      {/* Под логотипом: та же линия, что и лого — [StatusIndicator] Лайв + бегущая строка */}
       {!mobileMenuOpen && (
-        <Ticker speed={48} pauseOnHover className="relative z-0 border-t-0">
-          <span>ERA — проекты новой эры</span>
-          <span className="text-border">·</span>
-          <span>Технологии</span>
-          <span className="text-border">·</span>
-          <span>Образование</span>
-          <span className="text-border">·</span>
-          <span>Нейро</span>
-          <span className="text-border">·</span>
-          <span>Здоровье</span>
-          <span className="text-border">·</span>
-        </Ticker>
+        <div className="relative z-0 flex items-center border-t border-border/60 bg-muted/30">
+          <div className="container mx-auto flex h-9 w-full items-center px-4">
+            <div className="flex shrink-0 items-center gap-2 border-r border-border/60 pr-4">
+              <StatusIndicator state="active" size="sm" />
+              <span className="text-sm font-medium text-foreground">Лайв</span>
+            </div>
+            <div className="min-w-0 flex-1 overflow-hidden">
+            <Ticker speed={48} pauseOnHover className="border-t-0">
+              <span>ERA — проекты новой эры</span>
+              <span className="text-border">·</span>
+              <span>Технологии</span>
+              <span className="text-border">·</span>
+              <span>Образование</span>
+              <span className="text-border">·</span>
+              <span>Нейро</span>
+              <span className="text-border">·</span>
+              <span>Здоровье</span>
+              <span className="text-border">·</span>
+            </Ticker>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Mobile dropdown menu */}

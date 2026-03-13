@@ -96,8 +96,8 @@ export function ImageTextCard({
 
   const imageBlockStacked = hasTwoImages ? (
     <div className="shrink-0 w-full aspect-video overflow-hidden rounded-t-card">
-      {/* Мобилка: слайдер (свайп), бегунок на таче неудобен */}
-      <div className="h-full w-full sm:hidden">
+      {/* Телефон и узкий планшет: слайдер (свайп/точки), без скролла */}
+      <div className="h-full w-full md:hidden">
         <ImageSlider
           images={imageUrls!}
           alt={imageAlt}
@@ -105,8 +105,8 @@ export function ImageTextCard({
           imageClassName="size-full object-cover"
         />
       </div>
-      {/* Десктоп: две картинки с ручкой */}
-      <div className="hidden h-full w-full sm:block">
+      {/* Планшет и десктоп (md+): две картинки с ручкой, как на компе */}
+      <div className="hidden h-full w-full md:block">
         <ResizablePanelGroup
           id={`game-mode-${title}-resize`}
           orientation="horizontal"
@@ -144,9 +144,9 @@ export function ImageTextCard({
 
   return (
     <Card className={cn("overflow-hidden", className)}>
-      {/* Мобильный: сверху слайдер или одна картинка, снизу текст */}
-      <div className="flex flex-col sm:hidden">
-        <div className="shrink-0 w-full aspect-square overflow-hidden rounded-t-card sm:rounded-t-none sm:rounded-l-card">
+      {/* Телефон и узкий планшет: сверху слайдер или одна картинка, снизу текст (без скролла по картинке) */}
+      <div className="flex flex-col md:hidden">
+        <div className="shrink-0 w-full aspect-square overflow-hidden rounded-t-card md:rounded-t-none md:rounded-l-card">
           {hasTwoImages ? (
             <ImageSlider
               images={imageUrls!}
@@ -161,9 +161,9 @@ export function ImageTextCard({
         {textBlock}
       </div>
 
-      {/* Десктоп: слева — две картинки с ручкой посередине; справа — текст */}
-      <div className="hidden sm:flex sm:min-h-[300px]">
-        <div className="min-h-0 w-[min(50%,540px)] shrink-0 overflow-hidden rounded-t-card sm:rounded-l-card sm:rounded-r-none">
+      {/* Планшет и десктоп (md+): слева две картинки с ручкой, справа текст — как на компе */}
+      <div className="hidden md:flex md:min-h-[300px]">
+        <div className="min-h-0 w-[min(50%,540px)] shrink-0 overflow-hidden rounded-t-card md:rounded-l-card md:rounded-r-none">
           {hasTwoImages ? (
             <ResizablePanelGroup orientation="horizontal" className="h-full min-h-[300px]">
               <ResizablePanel defaultSize="50%" minSize="25%" maxSize="75%">
@@ -179,7 +179,7 @@ export function ImageTextCard({
               </ResizablePanel>
             </ResizablePanelGroup>
           ) : (
-            <div className="h-full w-full overflow-hidden rounded-t-card sm:rounded-l-card">
+            <div className="h-full w-full overflow-hidden rounded-t-card md:rounded-l-card">
               <SingleImage src={imageUrl} alt={imageAlt} />
             </div>
           )}

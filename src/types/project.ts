@@ -108,6 +108,33 @@ export interface ProjectPageDetail {
   risks: string
   /** Обновления (feed) — пока пустой массив */
   updates?: { date: string; title: string; body: string }[]
+
+  /** Маркетинговый анализ: анализ рынка */
+  marketAnalysis?: string
+  /** Маркетинговый анализ: конкурентная среда */
+  competitiveEnvironment?: string
+  /** Маркетинговый анализ: тенденции рынка */
+  marketTrends?: string
+  /** Маркетинговый анализ: потенциалы роста */
+  growthPotential?: string
+
+  /** Организационная структура: форма организации */
+  formOfOrganization?: string
+  /** Организационная структура: роли и обязанности */
+  rolesAndResponsibilities?: string
+  /** Организационная структура: организационная структура (схема/описание) */
+  organizationalStructure?: string
+
+  /** Продукты или услуги: описание */
+  productsOrServicesDescription?: string
+
+  /** Маркетинговая стратегия */
+  marketingStrategy?: string
+
+  /** Финансовые прогнозы: прогнозы продаж */
+  salesForecast?: string
+  /** Финансовые прогнозы: доходы и расходы (текст или доп. к таблице) */
+  incomeAndExpenses?: string
 }
 
 /** Статус проекта в БД и при отображении. */
