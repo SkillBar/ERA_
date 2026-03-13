@@ -2,7 +2,7 @@ import type { Project } from "@/types/project"
 
 /**
  * Таблица проектов (в реальной БД — отдельная таблица).
- * creatorIds — один или несколько креаторов.
+ * creatorIds — один или несколько создателей.
  * Категории добавим позже (categoryId).
  */
 export const PROJECTS: Project[] = [
@@ -20,6 +20,7 @@ export const PROJECTS: Project[] = [
     status: "live",
     country: "РФ",
     categoryId: "neuro",
+    projectType: "startup",
   },
   {
     id: "portal",

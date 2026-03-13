@@ -4,6 +4,7 @@ import { ArrowLeft, Globe, Share2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { RaisedButton } from "@/components/ui/raised-button"
 import { Progress } from "@/components/ui/progress"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { SectionCard } from "@/components/ui/section-card"
 import { CostBreakdownTable } from "@/components/CostBreakdownTable"
 import { ImageTextCard } from "@/components/ui/image-text-card"
@@ -23,6 +24,13 @@ function formatMoneyFull(value: number): string {
 const INVESTMENT_TYPE_LABELS: Record<string, string> = {
   ordinary: "Обычные инвестиции",
   crowdfunding: "Краудфандинг",
+}
+
+/** Типы проектов в БД: Компания (коммерческая/некоммерческая), Стартап */
+const PROJECT_TYPE_LABELS: Record<string, string> = {
+  company_commercial: "Коммерческая компания",
+  company_non_commercial: "Некоммерческая компания",
+  startup: "Стартап",
 }
 
 type SectionItem = { id: string; label: string; children?: { id: string; label: string }[] }
@@ -251,89 +259,106 @@ export function ProjectPage() {
         </div>
       </section>
 
-      {/* 1. Резюме проекта — ключевые метрики и бизнес-специфика, как карточка стартапа */}
+      {/* Один блок: Резюме проекта (метрики + создатели) */}
       <section id="section-summary" className="border-b border-border bg-surface py-6">
         <div className="container mx-auto px-4">
-          {detail?.investmentType && (
-            <div className="mb-4">
-              <p className="mb-1.5 text-sm text-muted-foreground">Тип инвестиций</p>
-              <span
-                className={cn(
-                  "inline-flex items-center rounded-lg border px-3 py-1.5 text-sm font-medium",
-                  detail.investmentType === "ordinary"
-                    ? "border-primary/30 bg-primary/10 text-primary"
-                    : "border-border bg-muted/50 text-foreground"
+          <Card className="border-border bg-card">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Резюме проекта</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                {detail?.investmentType && (
+                  <div>
+                    <p className="mb-1.5 text-sm text-muted-foreground">Тип инвестиций</p>
+                    <span
+                      className={cn(
+                        "inline-flex items-center rounded-lg border px-3 py-1.5 text-sm font-medium",
+                        detail.investmentType === "ordinary"
+                          ? "border-primary/30 bg-primary/10 text-primary"
+                          : "border-border bg-muted/50 text-foreground"
+                      )}
+                    >
+                      {INVESTMENT_TYPE_LABELS[detail.investmentType] ?? detail.investmentType}
+                    </span>
+                  </div>
                 )}
-              >
-                {INVESTMENT_TYPE_LABELS[detail.investmentType] ?? detail.investmentType}
-              </span>
-            </div>
-          )}
-          <div className="flex flex-wrap items-center gap-8">
-            <div>
-              <p className="text-sm text-muted-foreground">
-                {detail?.investmentType === "ordinary" ? "Сумма привлечения" : "Собрано"}
-              </p>
-              <p className="text-2xl font-semibold text-foreground">
-                {detail?.investmentType === "ordinary"
-                  ? `${formatMoneyFull(project.goal)} ₽`
-                  : `${formatMoneyFull(project.raised)} из ${formatMoneyFull(project.goal)} ₽`}
-              </p>
-            </div>
-            {detail?.stage && (
-              <>
-                <div className="h-8 w-px bg-border" />
                 <div>
-                  <p className="text-sm text-muted-foreground">Стадия</p>
-                  <p className="text-xl font-semibold text-foreground">
-                    {getProjectStageLabel(detail.stage)}
+                  <p className="mb-1 text-sm text-muted-foreground">
+                    {detail?.investmentType === "ordinary" ? "Сумма привлечения" : "Собрано"}
+                  </p>
+                  <p className="text-2xl font-semibold text-foreground">
+                    {detail?.investmentType === "ordinary"
+                      ? `${formatMoneyFull(project.goal)} ₽`
+                      : `${formatMoneyFull(project.raised)} из ${formatMoneyFull(project.goal)} ₽`}
                   </p>
                 </div>
-              </>
-            )}
-          </div>
-          {detail?.investmentType === "crowdfunding" && (
-            <div className="mt-4">
-              <Progress
-                value={fundedPercent}
-                className="h-2 [&>div]:bg-gradient-to-r [&>div]:from-blue-500 [&>div]:to-indigo-500"
-              />
-            </div>
-          )}
+                {project.projectType && (
+                  <div>
+                    <p className="mb-1 text-sm text-muted-foreground">Тип проекта</p>
+                    <p className="text-lg font-semibold text-foreground">
+                      {PROJECT_TYPE_LABELS[project.projectType] ?? project.projectType}
+                    </p>
+                  </div>
+                )}
+                {detail?.stage && (
+                  <div>
+                    <p className="mb-1 text-sm text-muted-foreground">Стадия</p>
+                    <p className="text-lg font-semibold text-foreground">
+                      {getProjectStageLabel(detail.stage)}
+                    </p>
+                  </div>
+                )}
+              </div>
+              {detail?.investmentType === "crowdfunding" && (
+                <Progress
+                  value={fundedPercent}
+                  className="h-2 [&>div]:bg-gradient-to-r [&>div]:from-blue-500 [&>div]:to-indigo-500"
+                />
+              )}
+              {detail?.projectMetrics && detail.projectMetrics.length > 0 && (
+                <div className="grid grid-cols-2 gap-x-6 gap-y-3 border-t border-border pt-4 sm:grid-cols-4">
+                  {detail.projectMetrics.map((m) => (
+                    <div key={m.label}>
+                      <p className="text-xs text-muted-foreground">{m.label}</p>
+                      <p className="font-semibold text-foreground">{m.value}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="border-t border-border pt-4">
+                <p className="mb-3 text-sm font-medium text-foreground">Создатели</p>
+                {project.creators.length > 0 ? (
+                  <div className="flex flex-wrap gap-3">
+                    {project.creators.map((c) => (
+                      <div
+                        key={c.id}
+                        className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-border bg-muted ring-2 ring-background"
+                        title={c.name}
+                      >
+                        {c.avatarUrl ? (
+                          <img
+                            src={c.avatarUrl}
+                            alt=""
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-sm font-semibold text-muted-foreground">
+                            {c.name.charAt(0)}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">—</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </section>
-
-      {/* Креаторы (кратко) */}
-      {project.creators.length > 0 && (
-        <section className="border-b border-border py-6">
-          <div className="container mx-auto px-4">
-            <h2 className="mb-4 text-lg font-semibold text-foreground">
-              Креаторы
-            </h2>
-            <div className="flex flex-wrap gap-4">
-              {project.creators.map((c) => (
-                <div
-                  key={c.id}
-                  className="flex items-center gap-3 rounded-card border border-border bg-card px-4 py-3"
-                >
-                  {c.avatarUrl ? (
-                    <img
-                      src={c.avatarUrl}
-                      alt=""
-                      className="h-10 w-10 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-sm font-medium text-muted-foreground">
-                      {c.name.charAt(0)}
-                    </div>
-                  )}
-                  <span className="font-medium text-foreground">{c.name}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* Полное описание: resizable сайдбар + контент (desktop), scroll spy по секциям */}
       {detail &&

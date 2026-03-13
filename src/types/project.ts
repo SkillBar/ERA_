@@ -1,5 +1,5 @@
 /**
- * Креатор — один или несколько на проект (связь многие-ко-многим через creatorIds в проекте).
+ * Создатель проекта — один или несколько на проект (связь многие-ко-многим через creatorIds в проекте).
  */
 export interface Creator {
   id: string
@@ -135,6 +135,9 @@ export interface ProjectPageDetail {
   salesForecast?: string
   /** Финансовые прогнозы: доходы и расходы (текст или доп. к таблице) */
   incomeAndExpenses?: string
+
+  /** Основные метрики проекта: NPV, ROI и т.д. (для карточки резюме) */
+  projectMetrics?: { label: string; value: string }[]
 }
 
 /** Статус проекта в БД и при отображении. */
@@ -148,7 +151,7 @@ export type ProjectCategory =
   | "neuro"
 
 /**
- * Проект как в БД: ссылки на креаторов по id.
+ * Проект как в БД: ссылки на создателей по id.
  * Категорию (categoryId) добавим позже.
  */
 export interface Project {
@@ -163,7 +166,7 @@ export interface Project {
   goal: number
   backers: number
   daysLeft: number
-  /** Один или несколько креаторов */
+  /** Один или несколько создателей */
   creatorIds: string[]
   /** Статус: уже работает, только делается, закрыт */
   status: ProjectStatus
@@ -171,10 +174,16 @@ export interface Project {
   country?: string
   /** Категория для витрины проектов на главной */
   categoryId: ProjectCategory
+  /**
+   * Тип проекта в БД:
+   * - Компания → коммерческая / некоммерческая
+   * - Стартап
+   */
+  projectType?: "company_commercial" | "company_non_commercial" | "startup"
 }
 
 /**
- * Проект с подставленными креаторами для отображения.
+ * Проект с подставленными создателями для отображения.
  */
 export interface ProjectWithCreators extends Omit<Project, "creatorIds"> {
   creators: Creator[]

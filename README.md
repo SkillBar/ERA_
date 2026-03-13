@@ -66,10 +66,10 @@ npx shadcn@latest add <component-name>
 
 - `src/components/Header.tsx` — шапка с логотипом, поиском и кнопками (мобильное гамбургер-меню)
 - `src/components/SearchAutocomplete.tsx` — поисковая строка с выпадающим списком (mock, готов к Algolia)
-- `src/components/ProjectCard.tsx` — карточка проекта (progress, метрики, креаторы, кнопка «Поддержать»)
+- `src/components/ProjectCard.tsx` — карточка проекта (progress, метрики, создатели, кнопка «Поддержать»)
 - `src/pages/Home.tsx` — главная: hero + поиск + сетка проектов (данные из «БД»)
 - `src/types/project.ts` — типы `Creator`, `Project` (с `creatorIds`), `ProjectWithCreators`
-- `src/data/creators.ts` — таблица креаторов (1 или несколько на проект)
+- `src/data/creators.ts` — таблица создателей (1 или несколько на проект)
 - `src/data/projects.ts` — таблица проектов (Pilot, Portal, Nexus, Radar, Level Up, Музыкальные парки России, Орнитолог, Тесты на executive functions)
 - `src/data/database.ts` — слой доступа: `getProjectsWithCreators()`, `getCreators()`, позже заменить на API
 

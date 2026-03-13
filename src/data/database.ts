@@ -18,7 +18,7 @@ export function getProjects(): Project[] {
 }
 
 /**
- * Проекты с подставленными креаторами (как JOIN в БД).
+ * Проекты с подставленными создателями (как JOIN в БД).
  */
 export function getProjectsWithCreators(): ProjectWithCreators[] {
   return PROJECTS.map((project) => ({
@@ -30,7 +30,7 @@ export function getProjectsWithCreators(): ProjectWithCreators[] {
 }
 
 /**
- * Один проект по id с креаторами (для будущей страницы проекта).
+ * Один проект по id с создателями (для страницы проекта).
  */
 export function getProjectWithCreatorsById(
   id: string

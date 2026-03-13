@@ -1,7 +1,7 @@
 import type { Creator } from "@/types/project"
 
 /**
- * Таблица креаторов (в реальной БД — отдельная таблица).
+ * Таблица создателей (в реальной БД — отдельная таблица).
  */
 export const CREATORS: Creator[] = [
   { id: "c1", name: "ERA Lab" },
