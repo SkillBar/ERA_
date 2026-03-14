@@ -1,9 +1,10 @@
 import type { CostBreakdownRow, ProjectPageDetail } from "@/types/project"
 
+/** Обложка (heroImageUrl) и лого в круге (logoUrl) заданы в БД для каждой страницы проекта. */
 const DETAILS: Record<string, ProjectPageDetail> = {
   pilot: {
     heroImageUrl: "/projects/pilot/hero.png",
-    logoUrl: undefined,
+    logoUrl: "/projects/pilot/logo.png",
     fullDescriptionImageUrl: "/projects/pilot/description.png",
     links: [
       { label: "Telegram", url: "#", icon: "telegram" },

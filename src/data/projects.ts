@@ -3,7 +3,7 @@ import type { Project } from "@/types/project"
 /**
  * Таблица проектов (в реальной БД — отдельная таблица).
  * creatorIds — один или несколько создателей.
- * Категории добавим позже (categoryId).
+ * Обложка: imageUrl. Лого в круге: iconUrl (если нет — fallback imageUrl).
  */
 export const PROJECTS: Project[] = [
   {

@@ -113,6 +113,12 @@ img {
   user-drag: none;
 }
 
+/* Лого проекта в кружке: как в мини-карточке, без инверсии в тёмной теме */
+html.dark img[data-project-logo],
+.dark img[data-project-logo] {
+  filter: none !important;
+}
+
 /* Бегущая строка: GPU (transform), бесшовный цикл через -50% */
 @keyframes ticker {
   from {

@@ -89,7 +89,7 @@ export function Home() {
 
   return (
     <main className="min-h-screen">
-      <section className="border-b border-border bg-background px-4 py-12 md:py-16">
+      <section className="border-b border-border bg-background py-12 md:py-16">
         <div className="container mx-auto">
           <motion.div
             className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between"
@@ -179,7 +179,7 @@ export function Home() {
         </div>
       </section>
 
-      <section className="border-t-8 border-muted/70 bg-surface px-4 py-12 md:py-14">
+      <section className="border-t-8 border-muted/70 bg-surface py-12 md:py-14">
         <div className="container mx-auto">
           <Tabs
             value={activeCategory}

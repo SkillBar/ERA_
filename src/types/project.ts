@@ -61,9 +61,9 @@ export type CostBreakdownRow =
 
 /** Детали для полной страницы проекта (подтягиваются из БД/API). */
 export interface ProjectPageDetail {
-  /** Hero-изображение (верхний баннер) */
+  /** Обложка проекта (hero, верхний баннер страницы). В БД — единственный источник обложки для страницы. */
   heroImageUrl: string
-  /** Логотип проекта (опционально) */
+  /** Лого проекта в круге (над названием на странице, в мини-карточке). В БД — единственный источник лого. */
   logoUrl?: string
   /** Ссылки: соцсети, сайт */
   links?: { label: string; url: string; icon?: string }[]
@@ -159,8 +159,9 @@ export interface Project {
   title: string
   /** Краткое описание для карточки (как в Roi UI CardDescription) */
   shortDescription?: string
+  /** Обложка проекта (карточка на витрине, hero на странице при отсутствии detail.heroImageUrl). В БД — обложка. */
   imageUrl: string
-  /** Иконка проекта (квадратная, для списков). Если нет — используется imageUrl */
+  /** Лого проекта в круге (мини-карточка, страница проекта над названием). В БД — лого. Если нет — используется imageUrl. */
   iconUrl?: string
   raised: number
   goal: number

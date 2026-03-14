@@ -1,0 +1,8 @@
+# Hugeicons Pro — стиль Bulk Rounded и другие Pro-стили.
+# 1. Получите Universal License Key: https://hugeicons.com/account/tokens
+# 2. Скопируйте этот файл: cp .npmrc.example .npmrc
+# 3. Замените UNIVERSAL_LICENSE_KEY на свой токен в .npmrc
+# 4. Установите пакет: npm install @hugeicons-pro/core-bulk-rounded
+# 5. В коде замените импорт с @hugeicons/core-free-icons на @hugeicons-pro/core-bulk-rounded
+@hugeicons-pro:registry=https://npm.hugeicons.com/
+//npm.hugeicons.com/:_authToken=UNIVERSAL_LICENSE_KEY

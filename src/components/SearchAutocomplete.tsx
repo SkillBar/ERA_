@@ -165,13 +165,13 @@ export function SearchAutocomplete({
           style={{ borderRadius: radiusPx }}
           className={cn(
             "overflow-hidden bg-white dark:bg-card transition-[flex] duration-200 ease-out",
-            panelVisible ? "flex flex-col gap-0" : "flex items-center text-foreground"
+            panelVisible ? "flex flex-col items-stretch gap-0" : "flex items-center text-foreground"
           )}
         >
-          {/* Строка поиска: лупа всегда на одном месте (слева); без фокуса — текст по центру, с фокусом — влево */}
+          {/* Строка поиска: shrink-0 и z-10 — фиксирована сверху, список всегда под ней */}
           <div
             className={cn(
-              "flex w-full shrink-0 items-center text-foreground transition-colors",
+              "relative z-10 flex w-full shrink-0 items-center bg-white text-foreground dark:bg-card",
               sizeClasses[size]
             )}
           >
@@ -241,10 +241,9 @@ export function SearchAutocomplete({
               <motion.ul
                 id="search-results"
                 role="listbox"
-                initial={{ opacity: 0, y: -4 }}
+                initial={{ opacity: 0 }}
                 animate={{
                   opacity: 1,
-                  y: 0,
                   transition: { duration: 0.2, ease: [0.25, 0.1, 0.25, 1] },
                 }}
                 exit={{
@@ -252,7 +251,7 @@ export function SearchAutocomplete({
                   transition: { duration: 0.18, ease: [0.4, 0, 1, 1] },
                 }}
                 className={cn(
-                  "overflow-auto bg-white py-1 dark:bg-card",
+                  "relative z-0 min-h-0 shrink-0 overflow-auto bg-white py-1 dark:bg-card",
                   "max-h-[min(400px,70vh)]"
                 )}
               >

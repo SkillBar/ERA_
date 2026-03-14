@@ -1,10 +1,17 @@
 import { useState, useEffect, useMemo } from "react"
 import { useParams, useNavigate } from "react-router-dom"
-import { ArrowLeft, Globe, Share2 } from "lucide-react"
+import { ArrowLeft } from "lucide-react"
+import { HugeiconsIcon } from "@hugeicons/react"
+import {
+  GlobeIcon,
+  Share07Icon,
+  TelegramIcon,
+  TwitterIcon,
+} from "@hugeicons/core-free-icons"
 import { Button } from "@/components/ui/button"
 import { RaisedButton } from "@/components/ui/raised-button"
 import { Progress } from "@/components/ui/progress"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { SectionCard } from "@/components/ui/section-card"
 import { CostBreakdownTable } from "@/components/CostBreakdownTable"
 import { ImageTextCard } from "@/components/ui/image-text-card"
@@ -97,9 +104,19 @@ export function ProjectPage() {
   const { projectId } = useParams<{ projectId: string }>()
   const navigate = useNavigate()
   const [logoError, setLogoError] = useState(false)
+  const [logoFallbackUsed, setLogoFallbackUsed] = useState(false)
   const [activeSection, setActiveSection] = useState<string>("")
   const project = projectId ? getProjectWithCreatorsById(projectId) : undefined
   const detail = projectId ? getProjectPageDetail(projectId) : undefined
+
+  /** Лого как в мини-карточке: один источник project.iconUrl ?? project.imageUrl */
+  const logoUrlPrimary = project?.iconUrl ?? project?.imageUrl
+  const logoUrl = logoError && !logoFallbackUsed ? "/era-logo.svg" : logoUrlPrimary
+
+  useEffect(() => {
+    setLogoError(false)
+    setLogoFallbackUsed(false)
+  }, [projectId])
 
   const sectionIds = useMemo(() => (detail ? getSectionIdsFlat(detail) : []), [detail])
 
@@ -154,7 +171,7 @@ export function ProjectPage() {
 
   if (!project) {
     return (
-      <main className="container mx-auto px-4 py-16 text-center">
+      <main className="container mx-auto py-16 text-center">
         <p className="text-muted-foreground">Проект не найден</p>
         <Button variant="link" onClick={() => navigate("/")} className="mt-4">
           На главную
@@ -184,7 +201,7 @@ export function ProjectPage() {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
         </div>
-        <div className="container relative mx-auto px-4 py-8 md:py-12">
+        <div className="container relative mx-auto py-8 md:py-12">
           <Button
             variant="ghost"
             size="sm"
@@ -194,23 +211,41 @@ export function ProjectPage() {
             <ArrowLeft className="mr-2 h-4 w-4" />
             Назад
           </Button>
-          <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-            <div className="space-y-4">
-              {detail?.logoUrl && !logoError ? (
+
+          {/* По центру: кружок лого над названием (в БД: logoUrl / iconUrl), название, соцсети */}
+          <div className="flex flex-col items-center justify-center gap-4 text-center">
+            {/* Кружок лого всегда над названием: картинка из БД → при ошибке /era-logo.svg → иначе первая буква */}
+            <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-border bg-card ring-2 ring-background md:h-24 md:w-24">
+              {logoUrl && !logoFallbackUsed ? (
                 <img
-                  src={detail.logoUrl}
-                  alt={project.title}
-                  className="h-14 w-auto max-w-[12rem] object-contain object-left dark:invert"
-                  onError={() => setLogoError(true)}
+                  src={logoUrl}
+                  alt=""
+                  data-project-logo
+                  className="h-full w-full object-cover object-center"
+                  onError={() => {
+                    if (logoUrl === logoUrlPrimary) setLogoError(true)
+                    else setLogoFallbackUsed(true)
+                  }}
                 />
               ) : (
-                <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl lg:text-5xl">
-                  {project.title}
-                </h1>
+                <span className="text-2xl font-bold text-muted-foreground md:text-3xl" aria-hidden>
+                  {project.title.charAt(0)}
+                </span>
               )}
-              {detail?.links && detail.links.length > 0 && (
-                <div className="flex items-center gap-3">
-                  {detail.links.map((link) => (
+            </div>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl lg:text-5xl">
+              {project.title}
+            </h1>
+            {detail?.links && detail.links.length > 0 && (
+              <div className="flex items-center justify-center gap-3">
+                {detail.links.map((link) => {
+                  const Icon =
+                    link.icon === "telegram"
+                      ? TelegramIcon
+                      : link.icon === "twitter"
+                        ? TwitterIcon
+                        : GlobeIcon
+                  return (
                     <a
                       key={link.url}
                       href={link.url}
@@ -219,18 +254,34 @@ export function ProjectPage() {
                       className="text-muted-foreground transition-colors hover:text-foreground"
                       aria-label={link.label}
                     >
-                      <Globe className="h-5 w-5" />
+                      <HugeiconsIcon
+                        icon={Icon}
+                        size={20}
+                        color="currentColor"
+                        strokeWidth={1.5}
+                      />
                     </a>
-                  ))}
-                  <button
-                    type="button"
-                    className="text-muted-foreground transition-colors hover:text-foreground"
-                    aria-label="Поделиться"
-                  >
-                    <Share2 className="h-5 w-5" />
-                  </button>
-                </div>
-              )}
+                  )
+                })}
+                <button
+                  type="button"
+                  className="text-muted-foreground transition-colors hover:text-foreground"
+                  aria-label="Поделиться"
+                >
+                  <HugeiconsIcon
+                    icon={Share07Icon}
+                    size={20}
+                    color="currentColor"
+                    strokeWidth={1.5}
+                  />
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Описание и всё о проекте — ниже */}
+          <div className="mt-10 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+            <div className="space-y-4">
               {detail?.shortDescription && (
                 <p className="max-w-2xl text-muted-foreground">
                   {detail.shortDescription}
@@ -259,14 +310,11 @@ export function ProjectPage() {
         </div>
       </section>
 
-      {/* Один блок: Резюме проекта (метрики + создатели) */}
+      {/* Один блок: метрики + создатели (заголовок «Резюме проекта» добавят в другом месте) */}
       <section id="section-summary" className="border-b border-border bg-surface py-6">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto">
           <Card className="border-border bg-card">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Резюме проекта</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-6 px-6 py-6">
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 {detail?.investmentType && (
                   <div>
@@ -648,13 +696,13 @@ export function ProjectPage() {
 
           return (
             <>
-              <div id="project-scroll-root" className="hidden gap-8 px-4 py-10 lg:flex">
+              <div id="project-scroll-root" className="container mx-auto hidden gap-8 py-10 lg:flex">
                 <aside className="sticky top-24 w-56 shrink-0 self-start">
                   {sidebarNav}
                 </aside>
                 <div className="min-w-0 flex-1">{mainContent}</div>
               </div>
-              <div className="flex px-4 py-10 lg:hidden">
+              <div className="container mx-auto flex py-10 lg:hidden">
                 <div className="min-w-0 flex-1">{mainContent}</div>
               </div>
             </>
@@ -662,7 +710,7 @@ export function ProjectPage() {
         })()}
 
       {!detail && (
-        <section className="container mx-auto px-4 py-16 text-center">
+        <section className="container mx-auto py-16 text-center">
           <p className="text-muted-foreground">
             Полное описание проекта скоро появится.
           </p>

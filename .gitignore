@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Hugeicons Pro (токен не коммитить)
+.npmrc
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

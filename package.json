@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@hugeicons/core-free-icons": "^4.0.0",
+    "@hugeicons/react": "^1.1.6",
     "@algolia/autocomplete-js": "^1.9.3",
     "@qpokychuk/gilroy": "^1.0.2",
     "@radix-ui/react-dialog": "^1.1.4",
