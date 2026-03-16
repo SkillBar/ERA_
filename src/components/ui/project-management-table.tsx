@@ -4,6 +4,7 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import type { ProjectStatus, ProjectWithCreators } from "@/types/project";
+import { useProjectImageUrl } from "@/hooks/useProjectImageUrl";
 
 const rowCardBase =
   "rounded-card border bg-card text-card-foreground overflow-hidden p-4";
@@ -57,12 +58,85 @@ export interface ProjectManagementTableProps {
   className?: string;
 }
 
+function ProjectRow({
+  project,
+  onSelect,
+  getStatusBadge,
+}: {
+  project: ProjectWithCreators;
+  onSelect: () => void;
+  getStatusBadge: (status: ProjectStatus) => React.ReactNode;
+}) {
+  const imageUrl = useProjectImageUrl(project);
+  const creatorNames = project.creators.map((c) => c.name).join(", ");
+  const country = project.country ?? "РФ";
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      className={`relative cursor-pointer ${rowCardBase} ${rowCardBorder}`}
+      onClick={onSelect}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onSelect();
+        }
+      }}
+    >
+      <div
+        className="absolute inset-0 pointer-events-none rounded-card"
+        style={{
+          background: STATUS_OVERLAY_GRADIENT[project.status],
+          backgroundSize: "35% 100%",
+          backgroundPosition: "right",
+          backgroundRepeat: "no-repeat",
+        }}
+      />
+      <div className="relative grid grid-cols-12 gap-4 items-center">
+        <div className="col-span-3 flex items-center gap-3">
+          <div className="w-12 h-12 shrink-0 rounded-card overflow-hidden border border-border/50 bg-muted/40">
+            <img
+              src={project.iconUrl ?? imageUrl}
+              alt={`${project.title}`}
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <span className="text-card-foreground font-medium line-clamp-2 min-w-0">
+            {project.title}
+          </span>
+        </div>
+        <div className="col-span-2">
+          <span className="text-card-foreground text-sm" title={creatorNames}>
+            {creatorNames || "—"}
+          </span>
+        </div>
+        <div className="col-span-2 flex items-center gap-2">
+          <CountryFlag country={country} />
+          <span className="text-card-foreground">{country}</span>
+        </div>
+        <div className="col-span-1">
+          <span className="text-card-foreground font-mono text-sm">
+            {formatMoney(project.raised)}
+          </span>
+        </div>
+        <div className="col-span-1">
+          <span className="text-card-foreground">{project.daysLeft}</span>
+        </div>
+        <div className="col-span-3">
+          {getStatusBadge(project.status)}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function ProjectManagementTable({
   title = "Проекты",
   projects,
   className = "",
 }: ProjectManagementTableProps) {
   const [selectedProject, setSelectedProject] = useState<ProjectWithCreators | null>(null);
+  const selectedProjectImageUrl = useProjectImageUrl(selectedProject);
 
   const getStatusBadge = (status: ProjectStatus) => (
     <div
@@ -104,75 +178,14 @@ export function ProjectManagementTable({
           </div>
 
           {/* Project Rows — те же токены, что и у ProjectCard: без motion по рядам */}
-          {projects.map((project) => {
-            const creatorNames = project.creators.map((c) => c.name).join(", ");
-            const country = project.country ?? "РФ";
-            return (
-              <div
-                key={project.id}
-                role="button"
-                tabIndex={0}
-                className={`relative cursor-pointer ${rowCardBase} ${rowCardBorder}`}
-                onClick={() => setSelectedProject(project)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    setSelectedProject(project);
-                  }
-                }}
-              >
-                <div
-                  className="absolute inset-0 pointer-events-none rounded-card"
-                  style={{
-                    background: STATUS_OVERLAY_GRADIENT[project.status],
-                    backgroundSize: "35% 100%",
-                    backgroundPosition: "right",
-                    backgroundRepeat: "no-repeat",
-                  }}
-                />
-
-                <div className="relative grid grid-cols-12 gap-4 items-center">
-                  <div className="col-span-3 flex items-center gap-3">
-                    <div className="w-12 h-12 shrink-0 rounded-card overflow-hidden border border-border/50 bg-muted/40">
-                      <img
-                        src={project.iconUrl ?? project.imageUrl}
-                        alt=""
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <span className="text-card-foreground font-medium line-clamp-2 min-w-0">
-                      {project.title}
-                    </span>
-                  </div>
-
-                  <div className="col-span-2">
-                    <span className="text-card-foreground text-sm" title={creatorNames}>
-                      {creatorNames || "—"}
-                    </span>
-                  </div>
-
-                  <div className="col-span-2 flex items-center gap-2">
-                    <CountryFlag country={country} />
-                    <span className="text-card-foreground">{country}</span>
-                  </div>
-
-                  <div className="col-span-1">
-                    <span className="text-card-foreground font-mono text-sm">
-                      {formatMoney(project.raised)}
-                    </span>
-                  </div>
-
-                  <div className="col-span-1">
-                    <span className="text-card-foreground">{project.daysLeft}</span>
-                  </div>
-
-                  <div className="col-span-3">
-                    {getStatusBadge(project.status)}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+          {projects.map((project) => (
+            <ProjectRow
+              key={project.id}
+              project={project}
+              onSelect={() => setSelectedProject(project)}
+              getStatusBadge={getStatusBadge}
+            />
+          ))}
         </div>
 
         {/* Project detail overlay */}
@@ -189,8 +202,8 @@ export function ProjectManagementTable({
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 shrink-0 rounded-card overflow-hidden border border-border/30">
                     <img
-                      src={selectedProject.imageUrl}
-                      alt=""
+                      src={selectedProjectImageUrl}
+                      alt={selectedProject ? selectedProject.title : ""}
                       className="w-full h-full object-cover"
                     />
                   </div>

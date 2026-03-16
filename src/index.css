@@ -119,18 +119,20 @@ html.dark img[data-project-logo],
   filter: none !important;
 }
 
-/* Бегущая строка: GPU (transform), бесшовный цикл через -50% */
+/* Бегущая строка: GPU (transform), бесшовный цикл через -50%; translateZ(0) держит слой на композиторе */
 @keyframes ticker {
   from {
-    transform: translateX(0);
+    transform: translateX(0) translateZ(0);
   }
   to {
-    transform: translateX(-50%);
+    transform: translateX(-50%) translateZ(0);
   }
 }
 
 .animate-ticker {
   animation: ticker var(--ticker-duration, 40s) linear infinite;
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
 @media (prefers-reduced-motion: reduce) {

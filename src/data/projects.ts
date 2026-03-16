@@ -3,7 +3,8 @@ import type { Project } from "@/types/project"
 /**
  * Таблица проектов (в реальной БД — отдельная таблица).
  * creatorIds — один или несколько создателей.
- * Обложка: imageUrl. Лого в круге: iconUrl (если нет — fallback imageUrl).
+ * Обложка: imageUrl (fallback), imageUrlDark / imageUrlLight — под тему (см. getProjectImageUrl).
+ * Лого в круге: iconUrl (если нет — fallback обложка по теме).
  */
 export const PROJECTS: Project[] = [
   {
@@ -40,7 +41,9 @@ export const PROJECTS: Project[] = [
     id: "nexus",
     title: "Nexus",
     shortDescription: "Инфраструктурный стек для команд новой цифровой экономики.",
-    imageUrl: "/projects/nexus/cover.png",
+    imageUrl: "/projects/nexus/cover-light.png",
+    imageUrlDark: "/projects/nexus/cover-dark.png",
+    imageUrlLight: "/projects/nexus/cover-light.png",
     iconUrl: "/projects/nexus/logo.png",
     raised: 1_100_000,
     goal: 500_000,

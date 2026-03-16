@@ -61,8 +61,12 @@ export type CostBreakdownRow =
 
 /** Детали для полной страницы проекта (подтягиваются из БД/API). */
 export interface ProjectPageDetail {
-  /** Обложка проекта (hero, верхний баннер страницы). В БД — единственный источник обложки для страницы. */
+  /** Обложка проекта (hero, верхний баннер страницы). Fallback при отсутствии темо-зависимых. */
   heroImageUrl: string
+  /** Hero-обложка для тёмной темы. Если задано — используется в dark mode вместо heroImageUrl. */
+  heroImageUrlDark?: string
+  /** Hero-обложка для светлой темы. Если задано — используется в light mode вместо heroImageUrl. */
+  heroImageUrlLight?: string
   /** Лого проекта в круге (над названием на странице, в мини-карточке). В БД — единственный источник лого. */
   logoUrl?: string
   /** Ссылки: соцсети, сайт */
@@ -159,8 +163,12 @@ export interface Project {
   title: string
   /** Краткое описание для карточки (как в Roi UI CardDescription) */
   shortDescription?: string
-  /** Обложка проекта (карточка на витрине, hero на странице при отсутствии detail.heroImageUrl). В БД — обложка. */
+  /** Обложка проекта (карточка на витрине, hero на странице при отсутствии detail.heroImageUrl). Fallback при отсутствии темо-зависимых. */
   imageUrl: string
+  /** Обложка для тёмной темы. Если задано — используется в dark mode вместо imageUrl. */
+  imageUrlDark?: string
+  /** Обложка для светлой темы. Если задано — используется в light mode вместо imageUrl. */
+  imageUrlLight?: string
   /** Лого проекта в круге (мини-карточка, страница проекта над названием). В БД — лого. Если нет — используется imageUrl. */
   iconUrl?: string
   raised: number

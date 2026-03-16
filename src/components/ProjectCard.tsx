@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom"
 import type { ProjectWithCreators } from "@/types/project"
 import { RaisedButton } from "@/components/ui/raised-button"
+import { useProjectImageUrl } from "@/hooks/useProjectImageUrl"
 import { cn } from "@/lib/utils"
 
 function formatGoal(value: number): string {
@@ -23,6 +24,7 @@ export interface ProjectCardProps {
  */
 export function ProjectCard({ project, className }: ProjectCardProps) {
   const navigate = useNavigate()
+  const imageUrl = useProjectImageUrl(project)
   const description =
     project.shortDescription ?? project.creators.map((c) => c.name).join(", ")
 
@@ -49,8 +51,8 @@ export function ProjectCard({ project, className }: ProjectCardProps) {
     >
         <div className="project-card__image-zone aspect-video w-full shrink-0 overflow-hidden rounded-t-card">
           <img
-            src={project.imageUrl}
-            alt=""
+            src={imageUrl}
+            alt={project.title}
             className="h-full w-full object-cover"
             loading="lazy"
             decoding="async"
@@ -61,8 +63,8 @@ export function ProjectCard({ project, className }: ProjectCardProps) {
           <div className="flex items-start gap-3">
             <div className="h-11 w-11 shrink-0 overflow-hidden rounded-card border border-border/50">
               <img
-                src={project.iconUrl ?? project.imageUrl}
-                alt=""
+                src={project.iconUrl ?? imageUrl}
+                alt={`Логотип ${project.title}`}
                 className="h-full w-full object-cover"
                 loading="lazy"
                 decoding="async"

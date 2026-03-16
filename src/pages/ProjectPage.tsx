@@ -22,6 +22,7 @@ import {
   getProjectPageDetail,
   getProjectStageLabel,
 } from "@/data/projectDetails"
+import { useHeroImageUrl, useProjectImageUrl } from "@/hooks/useProjectImageUrl"
 import { cn } from "@/lib/utils"
 
 function formatMoneyFull(value: number): string {
@@ -108,9 +109,11 @@ export function ProjectPage() {
   const [activeSection, setActiveSection] = useState<string>("")
   const project = projectId ? getProjectWithCreatorsById(projectId) : undefined
   const detail = projectId ? getProjectPageDetail(projectId) : undefined
+  const heroImageUrl = useHeroImageUrl(detail ?? undefined, project)
+  const projectImageUrl = useProjectImageUrl(project)
 
-  /** Лого как в мини-карточке: один источник project.iconUrl ?? project.imageUrl */
-  const logoUrlPrimary = project?.iconUrl ?? project?.imageUrl
+  /** Лого как в мини-карточке: один источник project.iconUrl ?? обложка по теме */
+  const logoUrlPrimary = project?.iconUrl ?? (projectImageUrl || undefined)
   const logoUrl = logoError && !logoFallbackUsed ? "/era-logo.svg" : logoUrlPrimary
 
   useEffect(() => {
@@ -191,8 +194,9 @@ export function ProjectPage() {
       <section className="relative overflow-hidden rounded-b-card border-b border-border bg-surface">
         <div className="absolute inset-0">
           <img
-            src={detail?.heroImageUrl ?? project.imageUrl}
+            src={heroImageUrl}
             alt=""
+            fetchPriority="high"
             className="h-full w-full object-cover opacity-40 dark:opacity-30"
             onError={(e) => {
               e.currentTarget.src = "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1200&h=600&fit=crop"
@@ -488,9 +492,9 @@ export function ProjectPage() {
                 <section id="section-game-modes" className="space-y-4">
                   <h2 className="text-xl font-semibold">Режимы игр</h2>
                   <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                    {detail.gameModes.map((mode, idx) => (
+                    {detail.gameModes.map((mode) => (
                       <ImageTextCard
-                        key={idx}
+                        key={mode.title}
                         imageUrl={mode.imageUrl}
                         imageAlt={mode.title}
                         title={mode.title}
