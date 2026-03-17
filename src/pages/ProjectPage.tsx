@@ -9,7 +9,6 @@ import {
   TwitterIcon,
 } from "@hugeicons/core-free-icons"
 import { Button } from "@/components/ui/button"
-import { RaisedButton } from "@/components/ui/raised-button"
 import { Progress } from "@/components/ui/progress"
 import { Card, CardContent } from "@/components/ui/card"
 import { SectionCard } from "@/components/ui/section-card"
@@ -283,33 +282,20 @@ export function ProjectPage() {
             )}
           </div>
 
-          {/* Описание и всё о проекте — ниже */}
-          <div className="mt-10 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-            <div className="space-y-4">
-              {detail?.shortDescription && (
-                <p className="max-w-2xl text-muted-foreground">
-                  {detail.shortDescription}
+          {/* Описание и карточка — одна центрированная колонка, фиксированная ширина, вертикальный ритм */}
+          <div className="mx-auto mt-10 w-full max-w-2xl space-y-6 text-center">
+            {detail?.shortDescription && (
+              <p className="text-muted-foreground">
+                {detail.shortDescription}
+              </p>
+            )}
+            {detail?.whatGivesContribution && (
+              <div className="rounded-card border border-primary/20 bg-primary/5 px-4 py-3 text-left">
+                <p className="text-sm font-medium text-foreground">
+                  {detail.whatGivesContribution}
                 </p>
-              )}
-              {detail?.targetAudience && (
-                <p className="max-w-2xl text-sm text-muted-foreground/90">
-                  <span className="font-medium text-foreground">Кому это нужно:</span>{" "}
-                  {detail.targetAudience}
-                </p>
-              )}
-              {detail?.whatGivesContribution && (
-                <div className="rounded-card border border-primary/20 bg-primary/5 px-4 py-3">
-                  <p className="text-sm font-medium text-foreground">
-                    {detail.whatGivesContribution}
-                  </p>
-                </div>
-              )}
-            </div>
-            <div className="flex shrink-0 flex-col gap-3 md:items-end">
-              <RaisedButton color="#3b82f6" size="lg" className="text-white">
-                Поддержать разработку
-              </RaisedButton>
-            </div>
+              </div>
+            )}
           </div>
         </div>
       </section>
