@@ -158,7 +158,8 @@ export const SearchAutocomplete = forwardRef<SearchAutocompleteHandle, SearchAut
       setPortalRect({
         left: rect.left,
         width: rect.width,
-        bottom: window.innerHeight - rect.top,
+        // −1px: нижний край панели совпадает с верхом внутреннего поля (у триггера p-px со всех сторон)
+        bottom: window.innerHeight - rect.top - 1,
         maxHeight,
       })
     }
@@ -331,13 +332,16 @@ export const SearchAutocomplete = forwardRef<SearchAutocompleteHandle, SearchAut
           borderBottomLeftRadius: radiusPx + 1,
           borderBottomRightRadius: radiusPx + 1,
           background: "linear-gradient(90deg, #3b82f6 0%, #06b6d4 50%, #14b8a6 100%)",
-          padding: panelAttached ? "0 1px 1px 1px" : 1,
           boxShadow: panelVisible && !panelAttached
             ? "0 0 16px rgba(59, 130, 246, 0.35), 0 0 28px rgba(6, 182, 212, 0.2)"
             : "none",
           overflow: "hidden",
         }}
-        className="cursor-text transition-shadow duration-200"
+        className={cn(
+          "cursor-text transition-shadow duration-200",
+          // Равная толщина градиентной «рамки» сверху и снизу (1px со всех сторон)
+          "box-border p-px"
+        )}
       >
         <div
         style={{
@@ -422,6 +426,7 @@ export const SearchAutocomplete = forwardRef<SearchAutocompleteHandle, SearchAut
                 placeholder=""
                 className={cn(
                   "relative z-10 w-full bg-transparent outline-none transition-[text-align] duration-200",
+                  "h-full min-h-0 appearance-none py-0 leading-none [-webkit-appearance:none] [&::-webkit-search-cancel-button]:hidden",
                   isFocused ? "text-left" : "text-center",
                   inputSizeClasses[size]
                 )}
@@ -467,6 +472,7 @@ export const SearchAutocomplete = forwardRef<SearchAutocompleteHandle, SearchAut
                       maxHeight: portalRect.maxHeight,
                       zIndex: 100,
                       background: "linear-gradient(90deg, #3b82f6 0%, #06b6d4 50%, #14b8a6 100%)",
+                      // Нижняя сторона без отступа — стык с полем без двойной линии при p-px на триггере
                       padding: "1px 1px 0 1px",
                       borderTopLeftRadius: radiusPx + 1,
                       borderTopRightRadius: radiusPx + 1,

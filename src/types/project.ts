@@ -23,6 +23,15 @@ export interface TeamMember {
   links?: { label: string; url: string }[]
 }
 
+/** Участник ядра команды (с долей/CapTable). */
+export interface CoreTeamMember {
+  id: string
+  name: string
+  role: string
+  responsibilities: string[]
+  capTablePercent: number
+}
+
 /** Стадия проекта для отображения на странице. */
 export type ProjectStage =
   | "idea"
@@ -104,7 +113,9 @@ export interface ProjectPageDetail {
   costBreakdownTable?: CostBreakdownRow[]
   /** Дорожная карта */
   roadmap?: RoadmapMilestone[]
-  /** Команда (3 человека: имя, должность, описание) */
+  /** Ядро команды (доли/CapTable). */
+  coreTeamMembers?: CoreTeamMember[]
+  /** Команда исполнителей: имя, должность, описание. */
   teamMembers: TeamMember[]
   /** Перки / уровни поддержки */
   perks?: PerkTier[]

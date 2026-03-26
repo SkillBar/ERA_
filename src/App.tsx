@@ -1,18 +1,51 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom"
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom"
 import { Header } from "@/components/Header"
 import { ScrollToTop } from "@/components/ScrollToTop"
 import { StatusIndicator } from "@/components/ui/status-indicator"
 import { Ticker } from "@/components/Ticker"
 import { Home } from "@/pages/Home"
 import { ProjectPage } from "@/pages/ProjectPage"
+import { useEffect, useState } from "react"
 
-function App() {
+function AppContent() {
+  const location = useLocation()
+  const [isLiveBarHidden, setIsLiveBarHidden] = useState(false)
+
+  useEffect(() => {
+    const isProjectPage = location.pathname.startsWith("/project/")
+    if (!isProjectPage) {
+      setIsLiveBarHidden(false)
+      return
+    }
+
+    const updateLiveBarVisibility = () => {
+      const summarySection = document.getElementById("section-summary")
+      if (!summarySection) {
+        setIsLiveBarHidden(window.scrollY > 120)
+        return
+      }
+      setIsLiveBarHidden(summarySection.getBoundingClientRect().top <= 36)
+    }
+
+    updateLiveBarVisibility()
+    window.addEventListener("scroll", updateLiveBarVisibility, { passive: true })
+    window.addEventListener("resize", updateLiveBarVisibility)
+    return () => {
+      window.removeEventListener("scroll", updateLiveBarVisibility)
+      window.removeEventListener("resize", updateLiveBarVisibility)
+    }
+  }, [location.pathname])
+
   return (
-    <BrowserRouter>
+    <>
       <ScrollToTop />
       <div className="min-h-screen bg-background text-foreground">
         {/* Полоска Лайв + бегущая строка — сверху */}
-        <div className="fixed top-0 left-0 right-0 z-50 flex items-center border-b border-border/60 bg-muted/30">
+        <div
+          className={`fixed top-0 left-0 right-0 z-50 flex items-center border-b border-border/60 bg-muted transition-all duration-300 ${
+            isLiveBarHidden ? "pointer-events-none -translate-y-full opacity-0" : "translate-y-0 opacity-100"
+          }`}
+        >
           <div className="container mx-auto flex h-9 w-full items-center px-4">
             <div className="flex shrink-0 items-center gap-2 border-r border-border/60 pr-4">
               <StatusIndicator state="active" size="sm" />
@@ -44,6 +77,14 @@ function App() {
         </main>
         <Header />
       </div>
+    </>
+  )
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AppContent />
     </BrowserRouter>
   )
 }

@@ -13,6 +13,7 @@ import { Progress } from "@/components/ui/progress"
 import { Card, CardContent } from "@/components/ui/card"
 import { SectionCard } from "@/components/ui/section-card"
 import { CostBreakdownTable } from "@/components/CostBreakdownTable"
+import { KidsScaleChart } from "@/components/KidsScaleChart"
 import { ImageTextCard } from "@/components/ui/image-text-card"
 import { TierCard } from "@/components/ui/tier-card"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -26,6 +27,13 @@ import { cn } from "@/lib/utils"
 
 function formatMoneyFull(value: number): string {
   return new Intl.NumberFormat("ru-RU").format(value)
+}
+
+function formatProjectCurrency(projectId: string, value: number): string {
+  if (projectId === "pilot") {
+    return `$${new Intl.NumberFormat("en-US").format(value)}`
+  }
+  return `${formatMoneyFull(value)} ₽`
 }
 
 const INVESTMENT_TYPE_LABELS: Record<string, string> = {
@@ -327,8 +335,8 @@ export function ProjectPage() {
                   </p>
                   <p className="text-2xl font-semibold text-foreground">
                     {detail?.investmentType === "ordinary"
-                      ? `${formatMoneyFull(project.goal)} ₽`
-                      : `${formatMoneyFull(project.raised)} из ${formatMoneyFull(project.goal)} ₽`}
+                      ? formatProjectCurrency(project.id, project.goal)
+                      : `${formatProjectCurrency(project.id, project.raised)} из ${formatProjectCurrency(project.id, project.goal)}`}
                   </p>
                 </div>
                 {project.projectType && (
@@ -393,6 +401,14 @@ export function ProjectPage() {
                   <p className="text-sm text-muted-foreground">—</p>
                 )}
               </div>
+              <div className="border-t border-border pt-4">
+                <p className="mb-3 text-sm font-medium text-foreground">Партнеры</p>
+                <div className="flex flex-wrap gap-2">
+                  <span className="inline-flex items-center rounded-full border border-border bg-muted px-3 py-1 text-sm text-foreground">
+                    ИРМ - Институт Развития Мозга
+                  </span>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -433,7 +449,7 @@ export function ProjectPage() {
                                 document.getElementById(child.id)?.scrollIntoView({ behavior: "smooth", block: "start" })
                               }}
                               className={cn(
-                                "flex items-center rounded-md py-1.5 text-sm transition-colors hover:text-foreground",
+                                "flex items-center rounded-md py-1.5 text-xs transition-colors hover:text-foreground md:text-[13px]",
                                 activeSection === child.id
                                   ? "text-primary font-medium"
                                   : "text-muted-foreground"
@@ -455,6 +471,22 @@ export function ProjectPage() {
             <div className="container mx-auto space-y-10">
               {/* 2. О проекте */}
               <SectionCard id="section-about" title="О проекте" contentClassName="space-y-4">
+                <div className="py-2 text-center">
+                  <p className="text-balance text-2xl font-bold uppercase tracking-[0.08em] text-foreground md:text-4xl">
+                    Мы создаем игры, которые тренируют фокус внимания
+                  </p>
+                </div>
+                <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground">
+                  <p>
+                    Наша команда занимается разработкой нового поколения интерактивных игровых продуктов на основе концепции phygital (physical + digital) - объединения физического и цифрового мира в единую игровую среду.
+                  </p>
+                  <p>
+                    Философия phygital-подхода заключается в том, что игровой процесс выходит за пределы виртуального пространства и начинает взаимодействовать с реальным миром. В таких играх пользователь управляет реальными объектами или взаимодействует с физической средой, а цифровые технологии дополняют и усиливают этот опыт.
+                  </p>
+                  <p>
+                    Мы создаем экосистему "полезных игр", в которых игровые механики сочетаются с технологиями обратной связи и интеграцией различных устройств. Это позволяет значительно повысить уровень иммерсивности - ощущения присутствия и вовлеченности в игровой процесс.
+                  </p>
+                </div>
                 {detail.fullDescriptionImageUrl && (
                   <div className="overflow-hidden rounded-card border border-border">
                     <img
@@ -476,7 +508,7 @@ export function ProjectPage() {
 
               {detail.gameModes && detail.gameModes.length > 0 && (
                 <section id="section-game-modes" className="space-y-4">
-                  <h2 className="text-xl font-semibold">Режимы игр</h2>
+                  <h3 className="text-lg font-semibold text-foreground/90">Режимы игр</h3>
                   <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                     {detail.gameModes.map((mode) => (
                       <ImageTextCard
@@ -538,10 +570,47 @@ export function ProjectPage() {
                       {detail.formOfOrganization ?? "—"}
                     </p>
                   </section>
-                  {detail.teamMembers && detail.teamMembers.length > 0 && (
+                  {((detail.coreTeamMembers && detail.coreTeamMembers.length > 0) ||
+                    (detail.teamMembers && detail.teamMembers.length > 0)) && (
                     <section id="section-team" className="space-y-4">
                       <h3 className="text-lg font-semibold">Команда</h3>
+
+                      {detail.coreTeamMembers && detail.coreTeamMembers.length > 0 && (
+                        <div className="space-y-3">
+                          <h4 className="text-base font-semibold text-foreground">Ядро команды</h4>
+                          <div className="overflow-x-auto rounded-card border border-border">
+                            <table className="w-full min-w-[720px] border-collapse text-sm">
+                              <thead className="bg-muted/40">
+                                <tr className="border-b border-border">
+                                  <th className="px-4 py-3 text-left font-semibold text-foreground">Имя</th>
+                                  <th className="px-4 py-3 text-left font-semibold text-foreground">Роль</th>
+                                  <th className="px-4 py-3 text-left font-semibold text-foreground">Обязанности</th>
+                                  <th className="px-4 py-3 text-left font-semibold text-foreground">CapTable</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {detail.coreTeamMembers.map((member) => (
+                                  <tr key={member.id} className="border-b border-border/70 align-top last:border-b-0">
+                                    <td className="px-4 py-3 text-foreground">{member.name}</td>
+                                    <td className="px-4 py-3 text-muted-foreground">{member.role}</td>
+                                    <td className="px-4 py-3 text-muted-foreground">
+                                      <ul className="list-disc space-y-1 pl-4">
+                                        {member.responsibilities.map((item) => (
+                                          <li key={item}>{item}</li>
+                                        ))}
+                                      </ul>
+                                    </td>
+                                    <td className="px-4 py-3 text-foreground">{member.capTablePercent}%</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      )}
+
                       <div className="space-y-4">
+                        <h4 className="text-base font-semibold text-foreground">Команда</h4>
                         {detail.teamMembers.map((member) => (
                           <div key={member.id} className="flex gap-4">
                             {member.avatarUrl ? (
@@ -604,9 +673,115 @@ export function ProjectPage() {
                       {detail.salesForecast ?? "—"}
                     </p>
                   </section>
+                  {project.id === "pilot" && <KidsScaleChart />}
                   <section id="section-income-expenses" className="space-y-4">
                     <h3 className="text-lg font-semibold">Доходы и расходы</h3>
-                    {detail.incomeAndExpenses && (
+                    {project.id === "pilot" && (
+                      <div className="space-y-6">
+                        <section className="space-y-3">
+                          <h4 className="text-base font-semibold">Экономика одной точки (Kids)</h4>
+                          <div className="overflow-x-auto rounded-card border border-border">
+                            <table className="w-full min-w-[680px] border-collapse text-sm">
+                              <thead className="bg-muted/40">
+                                <tr className="border-b border-border">
+                                  <th className="px-4 py-3 text-left font-semibold text-foreground">Показатель</th>
+                                  <th className="px-4 py-3 text-left font-semibold text-foreground">Значение</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr className="border-b border-border/70"><td className="px-4 py-3">Длительность игровой сессии</td><td className="px-4 py-3">15 минут</td></tr>
+                                <tr className="border-b border-border/70"><td className="px-4 py-3">Средняя цена сессии</td><td className="px-4 py-3">600 ₽</td></tr>
+                                <tr className="border-b border-border/70"><td className="px-4 py-3">Средний чек (с доп. покупками)</td><td className="px-4 py-3">700 ₽</td></tr>
+                                <tr className="border-b border-border/70"><td className="px-4 py-3">Количество сессий в день</td><td className="px-4 py-3">60</td></tr>
+                                <tr className="border-b border-border/70"><td className="px-4 py-3">Выручка в день</td><td className="px-4 py-3">42 000 ₽</td></tr>
+                                <tr><td className="px-4 py-3">Выручка в месяц</td><td className="px-4 py-3">1 260 000 ₽</td></tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        </section>
+
+                        <section className="space-y-3">
+                          <h4 className="text-base font-semibold">Операционные расходы (в месяц)</h4>
+                          <div className="overflow-x-auto rounded-card border border-border">
+                            <table className="w-full min-w-[680px] border-collapse text-sm">
+                              <thead className="bg-muted/40">
+                                <tr className="border-b border-border">
+                                  <th className="px-4 py-3 text-left font-semibold text-foreground">Статья расходов</th>
+                                  <th className="px-4 py-3 text-left font-semibold text-foreground">Сумма</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr className="border-b border-border/70"><td className="px-4 py-3">Аренда</td><td className="px-4 py-3">300 000 ₽</td></tr>
+                                <tr className="border-b border-border/70"><td className="px-4 py-3">Зарплата персонала</td><td className="px-4 py-3">150 000 ₽</td></tr>
+                                <tr><td className="px-4 py-3 font-medium">Итого расходы</td><td className="px-4 py-3 font-medium">450 000 ₽</td></tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        </section>
+
+                        <section className="space-y-3">
+                          <h4 className="text-base font-semibold">Прибыль одной точки</h4>
+                          <div className="overflow-x-auto rounded-card border border-border">
+                            <table className="w-full min-w-[680px] border-collapse text-sm">
+                              <thead className="bg-muted/40">
+                                <tr className="border-b border-border">
+                                  <th className="px-4 py-3 text-left font-semibold text-foreground">Показатель</th>
+                                  <th className="px-4 py-3 text-left font-semibold text-foreground">Сумма</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr className="border-b border-border/70"><td className="px-4 py-3">Выручка</td><td className="px-4 py-3">1 260 000 ₽</td></tr>
+                                <tr className="border-b border-border/70"><td className="px-4 py-3">Расходы</td><td className="px-4 py-3">450 000 ₽</td></tr>
+                                <tr className="border-b border-border/70"><td className="px-4 py-3 font-medium">Операционная прибыль</td><td className="px-4 py-3 font-medium">810 000 ₽ / месяц</td></tr>
+                                <tr><td className="px-4 py-3">Прибыль в год</td><td className="px-4 py-3">9 720 000 ₽</td></tr>
+                              </tbody>
+                            </table>
+                          </div>
+                          <p className="text-sm text-muted-foreground">(до налогообложения)</p>
+                        </section>
+
+                        <section className="space-y-3">
+                          <h4 className="text-base font-semibold">Масштабирование сети</h4>
+                          <div className="space-y-4">
+                            <div className="space-y-2">
+                              <p className="text-sm font-medium text-foreground">10 точек</p>
+                              <div className="overflow-x-auto rounded-card border border-border">
+                                <table className="w-full min-w-[680px] border-collapse text-sm">
+                                  <thead className="bg-muted/40">
+                                    <tr className="border-b border-border">
+                                      <th className="px-4 py-3 text-left font-semibold text-foreground">Показатель</th>
+                                      <th className="px-4 py-3 text-left font-semibold text-foreground">Значение</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    <tr className="border-b border-border/70"><td className="px-4 py-3">Прибыль в месяц</td><td className="px-4 py-3">8 100 000 ₽</td></tr>
+                                    <tr><td className="px-4 py-3">Прибыль в год</td><td className="px-4 py-3">97 200 000 ₽</td></tr>
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                            <div className="space-y-2">
+                              <p className="text-sm font-medium text-foreground">100 точек</p>
+                              <div className="overflow-x-auto rounded-card border border-border">
+                                <table className="w-full min-w-[680px] border-collapse text-sm">
+                                  <thead className="bg-muted/40">
+                                    <tr className="border-b border-border">
+                                      <th className="px-4 py-3 text-left font-semibold text-foreground">Показатель</th>
+                                      <th className="px-4 py-3 text-left font-semibold text-foreground">Значение</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    <tr className="border-b border-border/70"><td className="px-4 py-3">Прибыль в месяц</td><td className="px-4 py-3">81 000 000 ₽</td></tr>
+                                    <tr><td className="px-4 py-3">Прибыль в год</td><td className="px-4 py-3">972 000 000 ₽</td></tr>
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          </div>
+                        </section>
+                      </div>
+                    )}
+                    {project.id !== "pilot" && detail.incomeAndExpenses && (
                       <p className="text-muted-foreground whitespace-pre-line">{detail.incomeAndExpenses}</p>
                     )}
                     {detail.breakdown && detail.breakdown.length > 0 && (
@@ -687,7 +862,7 @@ export function ProjectPage() {
           return (
             <>
               <div id="project-scroll-root" className="container mx-auto hidden gap-8 py-10 lg:flex">
-                <aside className="sticky top-24 w-56 shrink-0 self-start">
+                <aside className="sticky top-3 w-56 shrink-0 self-start">
                   {sidebarNav}
                 </aside>
                 <div className="min-w-0 flex-1">{mainContent}</div>

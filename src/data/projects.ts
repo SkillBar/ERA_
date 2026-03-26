@@ -14,7 +14,7 @@ export const PROJECTS: Project[] = [
     imageUrl: "/projects/pilot/hero.png",
     iconUrl: "/projects/pilot/logo.png",
     raised: 2_500_000,
-    goal: 10_000_000,
+    goal: 500_000,
     backers: 891,
     daysLeft: 0,
     creatorIds: ["c1"],
