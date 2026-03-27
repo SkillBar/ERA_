@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Card, CardContent } from "@/components/ui/card"
 import { SectionCard } from "@/components/ui/section-card"
+import { CyberneticGridShader } from "@/components/ui/cybernetic-grid-shader"
 import { CostBreakdownTable } from "@/components/CostBreakdownTable"
 import { KidsScaleChart } from "@/components/KidsScaleChart"
 import { ImageTextCard } from "@/components/ui/image-text-card"
@@ -194,22 +195,27 @@ export function ProjectPage() {
     100,
     Math.round((project.raised / project.goal) * 100)
   )
+  const isPilotProject = project.id === "pilot"
 
   return (
     <main className="min-h-screen bg-background">
       {/* Hero */}
       <section className="relative overflow-hidden rounded-b-card border-b border-border bg-surface">
         <div className="absolute inset-0">
-          <img
-            src={heroImageUrl}
-            alt=""
-            fetchPriority="high"
-            className="h-full w-full object-cover opacity-40 dark:opacity-30"
-            onError={(e) => {
-              e.currentTarget.src = "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1200&h=600&fit=crop"
-              e.currentTarget.onerror = null
-            }}
-          />
+          {isPilotProject ? (
+            <CyberneticGridShader className="opacity-95" />
+          ) : (
+            <img
+              src={heroImageUrl}
+              alt=""
+              fetchPriority="high"
+              className="h-full w-full object-cover opacity-40 dark:opacity-30"
+              onError={(e) => {
+                e.currentTarget.src = "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1200&h=600&fit=crop"
+                e.currentTarget.onerror = null
+              }}
+            />
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
         </div>
         <div className="container relative mx-auto py-8 md:py-12">
