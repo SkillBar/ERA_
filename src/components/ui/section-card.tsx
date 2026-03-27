@@ -6,6 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 
 export interface SectionCardProps {
@@ -15,6 +16,7 @@ export interface SectionCardProps {
   description?: React.ReactNode
   children: React.ReactNode
   contentClassName?: string
+  titleClassName?: string
   className?: string
 }
 
@@ -24,11 +26,22 @@ export interface SectionCardProps {
  * Переиспользуется на любых страницах проектов.
  */
 export const SectionCard = React.forwardRef<HTMLDivElement, SectionCardProps>(
-  ({ id, title, description, children, contentClassName, className }, ref) => (
+  ({ id, title, description, children, contentClassName, titleClassName, className }, ref) => (
     <Card id={id} ref={ref} className={cn(className)}>
       <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        {description != null && <CardDescription>{description}</CardDescription>}
+        <CardTitle className="text-center">
+          <Badge
+            className={cn(
+              "inline-flex max-w-full whitespace-normal rounded-full border-blue-200/80 bg-blue-50 px-2.5 py-1 text-center text-[11px] font-medium leading-snug text-blue-700 dark:border-blue-800/80 dark:bg-blue-950 dark:text-blue-300 md:text-xs",
+              titleClassName
+            )}
+          >
+            {title}
+          </Badge>
+        </CardTitle>
+        {description != null && (
+          <CardDescription className="text-center">{description}</CardDescription>
+        )}
       </CardHeader>
       <CardContent className={cn(contentClassName)}>{children}</CardContent>
     </Card>

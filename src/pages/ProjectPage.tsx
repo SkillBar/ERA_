@@ -473,7 +473,7 @@ export function ProjectPage() {
               <SectionCard id="section-about" title="О проекте" contentClassName="space-y-4">
                 <div className="py-2 text-center">
                   <p className="text-balance text-2xl font-bold uppercase tracking-[0.08em] text-foreground md:text-4xl">
-                    Мы создаем игры, которые тренируют фокус внимания
+                    Мы создаем экосистему развивающих игр в которых цифровой мир объединяется с физической реальностью
                   </p>
                 </div>
                 <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground">
