@@ -9,7 +9,7 @@ import type { Project } from "@/types/project"
 export const PROJECTS: Project[] = [
   {
     id: "pilot",
-    title: "Pilot",
+    title: "Level Up Games",
     shortDescription: "Гонки от первого лица с элементами нейроинтерфейса (BCI). Новый формат гейминга на стыке симуляторов и силы мысли.",
     imageUrl: "/projects/pilot/hero.png",
     iconUrl: "/projects/pilot/logo.png",

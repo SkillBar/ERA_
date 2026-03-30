@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { ArrowLeft } from "lucide-react"
 import { HugeiconsIcon } from "@hugeicons/react"
@@ -17,7 +17,7 @@ import { CostBreakdownTable } from "@/components/CostBreakdownTable"
 import { KidsScaleChart } from "@/components/KidsScaleChart"
 import { ImageTextCard } from "@/components/ui/image-text-card"
 import { TierCard } from "@/components/ui/tier-card"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { ProjectPageSidebar, type ProjectPageNavItem } from "@/components/project-page-sidebar"
 import { getProjectWithCreatorsById } from "@/data/database"
 import {
   getProjectPageDetail,
@@ -49,13 +49,10 @@ const PROJECT_TYPE_LABELS: Record<string, string> = {
   startup: "Стартап",
 }
 
-type SectionItem = { id: string; label: string; children?: { id: string; label: string }[] }
-
 /** Секции для сайдбара (дерево на 1 уровень вниз) и scroll spy. Структура страницы проекта. */
-function getSectionConfig(detail: NonNullable<ReturnType<typeof getProjectPageDetail>>): SectionItem[] {
+function getSectionConfig(detail: NonNullable<ReturnType<typeof getProjectPageDetail>>): ProjectPageNavItem[] {
   const aboutChildren = detail.gameModes?.length ? [{ id: "section-game-modes", label: "Режимы игр" }] : undefined
   return [
-    { id: "section-summary", label: "Резюме проекта" },
     {
       id: "section-about",
       label: "О проекте",
@@ -115,6 +112,7 @@ export function ProjectPage() {
   const [logoError, setLogoError] = useState(false)
   const [logoFallbackUsed, setLogoFallbackUsed] = useState(false)
   const [activeSection, setActiveSection] = useState<string>("")
+
   const project = projectId ? getProjectWithCreatorsById(projectId) : undefined
   const detail = projectId ? getProjectPageDetail(projectId) : undefined
   const heroImageUrl = useHeroImageUrl(detail ?? undefined, project)
@@ -130,6 +128,12 @@ export function ProjectPage() {
   }, [projectId])
 
   const sectionIds = useMemo(() => (detail ? getSectionIdsFlat(detail) : []), [detail])
+
+  const sectionNavItems = useMemo(() => (detail ? getSectionConfig(detail) : []), [detail])
+
+  const navigateToSection = useCallback((sectionId: string) => {
+    document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" })
+  }, [])
 
   // Scroll spy: IntersectionObserver — активная секция та, что в верхней части вьюпорта
   useEffect(() => {
@@ -423,56 +427,6 @@ export function ProjectPage() {
       {/* Полное описание: resizable сайдбар + контент (desktop), scroll spy по секциям */}
       {detail &&
         (() => {
-          const sidebarNav = (
-            <div className="rounded-card border border-border bg-card text-card-foreground">
-              <ScrollArea className="h-[calc(100vh-7rem)]">
-                <nav className="flex flex-col gap-0.5 p-2">
-                  {getSectionConfig(detail).map((item) => (
-                    <div key={item.id} className="space-y-0.5">
-                      <a
-                        href={`#${item.id}`}
-                        onClick={(e) => {
-                          e.preventDefault()
-                          document.getElementById(item.id)?.scrollIntoView({ behavior: "smooth", block: "start" })
-                        }}
-                        className={cn(
-                          "flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
-                          activeSection === item.id || item.children?.some((c) => c.id === activeSection)
-                            ? "bg-accent text-accent-foreground"
-                            : "text-muted-foreground"
-                        )}
-                      >
-                        {item.label}
-                      </a>
-                      {item.children && item.children.length > 0 && (
-                        <div className="relative ml-3 border-l border-border pl-3">
-                          {item.children.map((child) => (
-                            <a
-                              key={child.id}
-                              href={`#${child.id}`}
-                              onClick={(e) => {
-                                e.preventDefault()
-                                document.getElementById(child.id)?.scrollIntoView({ behavior: "smooth", block: "start" })
-                              }}
-                              className={cn(
-                                "flex items-center rounded-md py-1.5 text-xs transition-colors hover:text-foreground md:text-[13px]",
-                                activeSection === child.id
-                                  ? "text-primary font-medium"
-                                  : "text-muted-foreground"
-                              )}
-                            >
-                              {child.label}
-                            </a>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </nav>
-              </ScrollArea>
-            </div>
-          )
-
           const mainContent = (
             <div className="container mx-auto space-y-10">
               {/* 2. О проекте */}
@@ -868,9 +822,11 @@ export function ProjectPage() {
           return (
             <>
               <div id="project-scroll-root" className="container mx-auto hidden gap-8 py-10 lg:flex">
-                <aside className="sticky top-3 w-56 shrink-0 self-start">
-                  {sidebarNav}
-                </aside>
+                <ProjectPageSidebar
+                  items={sectionNavItems}
+                  activeSection={activeSection}
+                  onNavigate={navigateToSection}
+                />
                 <div className="min-w-0 flex-1">{mainContent}</div>
               </div>
               <div className="container mx-auto flex py-10 lg:hidden">

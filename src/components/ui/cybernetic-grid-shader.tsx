@@ -13,21 +13,29 @@ export function CyberneticGridShader({ className }: CyberneticGridShaderProps) {
     const container = containerRef.current
     if (!container) return
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2))
-    container.appendChild(renderer.domElement)
+    let renderer: THREE.WebGLRenderer | null = null
+    let material: THREE.ShaderMaterial | null = null
+    let geometry: THREE.PlaneGeometry | null = null
 
-    const scene = new THREE.Scene()
-    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1)
-    const clock = new THREE.Clock()
+    const onResizeRef = { current: () => {} }
+    const onMouseMoveRef = { current: (_e: MouseEvent) => {} }
 
-    const vertexShader = `
+    try {
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2))
+      container.appendChild(renderer.domElement)
+
+      const scene = new THREE.Scene()
+      const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1)
+      const clock = new THREE.Clock()
+
+      const vertexShader = `
       void main() {
         gl_Position = vec4(position, 1.0);
       }
     `
 
-    const fragmentShader = `
+      const fragmentShader = `
       precision highp float;
       uniform vec2 iResolution;
       uniform float iTime;
@@ -67,63 +75,85 @@ export function CyberneticGridShader({ className }: CyberneticGridShaderProps) {
       }
     `
 
-    const uniforms = {
-      iTime: { value: 0 },
-      iResolution: { value: new THREE.Vector2(1, 1) },
-      iMouse: { value: new THREE.Vector2(0.5, 0.5) },
-    }
-
-    const material = new THREE.ShaderMaterial({
-      vertexShader,
-      fragmentShader,
-      uniforms,
-      transparent: true,
-    })
-
-    const geometry = new THREE.PlaneGeometry(2, 2)
-    const mesh = new THREE.Mesh(geometry, material)
-    scene.add(mesh)
-
-    const updateMouseFromClient = (clientX: number, clientY: number) => {
-      const rect = container.getBoundingClientRect()
-      const x = clientX - rect.left
-      const y = rect.height - (clientY - rect.top)
-      uniforms.iMouse.value.set(x, y)
-    }
-
-    const onResize = () => {
-      const width = Math.max(1, container.clientWidth)
-      const height = Math.max(1, container.clientHeight)
-      renderer.setSize(width, height)
-      uniforms.iResolution.value.set(width, height)
-      uniforms.iMouse.value.set(width * 0.5, height * 0.5)
-    }
-
-    const onMouseMove = (e: MouseEvent) => {
-      updateMouseFromClient(e.clientX, e.clientY)
-    }
-
-    onResize()
-    window.addEventListener("resize", onResize)
-    window.addEventListener("mousemove", onMouseMove, { passive: true })
-
-    renderer.setAnimationLoop(() => {
-      uniforms.iTime.value = clock.getElapsedTime()
-      renderer.render(scene, camera)
-    })
-
-    return () => {
-      window.removeEventListener("resize", onResize)
-      window.removeEventListener("mousemove", onMouseMove)
-      renderer.setAnimationLoop(null)
-
-      if (renderer.domElement.parentNode === container) {
-        container.removeChild(renderer.domElement)
+      const uniforms = {
+        iTime: { value: 0 },
+        iResolution: { value: new THREE.Vector2(1, 1) },
+        iMouse: { value: new THREE.Vector2(0.5, 0.5) },
       }
 
-      material.dispose()
-      geometry.dispose()
-      renderer.dispose()
+      material = new THREE.ShaderMaterial({
+        vertexShader,
+        fragmentShader,
+        uniforms,
+        transparent: true,
+      })
+
+      geometry = new THREE.PlaneGeometry(2, 2)
+      const mesh = new THREE.Mesh(geometry, material)
+      scene.add(mesh)
+
+      const updateMouseFromClient = (clientX: number, clientY: number) => {
+        const rect = container.getBoundingClientRect()
+        const x = clientX - rect.left
+        const y = rect.height - (clientY - rect.top)
+        uniforms.iMouse.value.set(x, y)
+      }
+
+      const onResize = () => {
+        const width = Math.max(1, container.clientWidth)
+        const height = Math.max(1, container.clientHeight)
+        renderer!.setSize(width, height)
+        uniforms.iResolution.value.set(width, height)
+        uniforms.iMouse.value.set(width * 0.5, height * 0.5)
+      }
+      onResizeRef.current = onResize
+
+      const onMouseMove = (e: MouseEvent) => {
+        updateMouseFromClient(e.clientX, e.clientY)
+      }
+      onMouseMoveRef.current = onMouseMove
+
+      onResize()
+      window.addEventListener("resize", onResize)
+      window.addEventListener("mousemove", onMouseMove, { passive: true })
+
+      renderer.setAnimationLoop(() => {
+        try {
+          uniforms.iTime.value = clock.getElapsedTime()
+          renderer!.render(scene, camera)
+        } catch (frameErr) {
+          console.warn("[CyberneticGridShader] render loop stopped:", frameErr)
+          renderer?.setAnimationLoop(null)
+        }
+      })
+    } catch (err) {
+      console.warn("[CyberneticGridShader] WebGL init failed, hero falls back to gradient only:", err)
+      if (renderer?.domElement?.parentNode === container) {
+        container.removeChild(renderer.domElement)
+      }
+      try {
+        material?.dispose()
+        geometry?.dispose()
+        renderer?.dispose()
+      } catch {
+        /* ignore */
+      }
+    }
+
+    return () => {
+      window.removeEventListener("resize", onResizeRef.current)
+      window.removeEventListener("mousemove", onMouseMoveRef.current)
+      try {
+        renderer?.setAnimationLoop(null)
+        if (renderer?.domElement.parentNode === container) {
+          container.removeChild(renderer.domElement)
+        }
+        material?.dispose()
+        geometry?.dispose()
+        renderer?.dispose()
+      } catch {
+        /* ignore */
+      }
     }
   }, [])
 

@@ -10,6 +10,14 @@ export default defineConfig({
     port: 5173,
     strictPort: false,
     open: true,
+    /** Dev: фронт бьёт в `fetch('/api/v1/...')` → Hono на PORT (см. api/README в корне репо — запуск `npm run dev:api`). */
+    proxy: {
+      "/api": {
+        target: "http://127.0.0.1:8787",
+        changeOrigin: true,
+        rewrite: (p) => p.replace(/^\/api/, ""),
+      },
+    },
   },
   resolve: {
     alias: {

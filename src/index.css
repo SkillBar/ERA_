@@ -181,3 +181,23 @@ html.dark .project-card {
 .project-card__content {
   background: transparent;
 }
+
+/* Сайдбар проекта: появление подпунктов без inline <style> */
+@keyframes sidebar-subnav-in {
+  from {
+    opacity: 0;
+    transform: translate3d(-4px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+.sidebar-subnav-enter {
+  animation: sidebar-subnav-in 95ms ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-subnav-enter {
+    animation: none;
+  }
+}

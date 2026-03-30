@@ -1,0 +1,30 @@
+[
+  {
+    "id": "pilot",
+    "title": "Level Up Games",
+    "shortDescription": "Гонки от первого лица с элементами нейроинтерфейса (BCI).",
+    "raised": 2500000,
+    "goal": 500000,
+    "backers": 891,
+    "daysLeft": 0,
+    "creatorIds": ["c1"],
+    "status": "live",
+    "country": "РФ",
+    "categoryId": "neuro",
+    "projectType": "startup"
+  },
+  {
+    "id": "portal",
+    "title": "Portal",
+    "shortDescription": "Платформа для immersive-опыта и виртуальных пространств.",
+    "raised": 180000,
+    "goal": 200000,
+    "backers": 456,
+    "daysLeft": 21,
+    "creatorIds": ["c2", "c9"],
+    "status": "in_progress",
+    "country": "РФ",
+    "categoryId": "technology",
+    "projectType": "company_commercial"
+  }
+]
